@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>흙토람 - 노지 밭 물사용 처방</title>
+
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/module.css" />
+  <style>
+    .container { max-width: 900px; margin: 0 auto; padding: 1em; }
+    h1 { margin-bottom: 0.5em; }
+    .nav { margin-bottom: 1em; }
+    .nav a { margin-right: 1em; color: #333; text-decoration: none; }
+    .form-row { margin: 0.5em 0; }
+    select, input[type="date"], input[type="text"] { margin-right: 0.5em; }
+    .button { padding: 0.4em 1em; border: none; background: #6c615e; color: #fff; cursor: pointer; }
+    .button.default { background: #ccc; color: #333; }
+    .info { color: red; margin-top: 0.5em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #aaa; padding: 0.5em; text-align: center; }
+    /* 상세 리포트는 요약 아래에 살짝 여백 추가 */
+    #report { margin-top: 2em; }
+  </style>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+  $(function(){
+    // ─── 1) 매핑 데이터 ────────────────────────────
+    const sidoList = {
+      '51': '강원특별자치도',
+      '41': '경기도',
+      '45': '전북특별자치도'
+    };
+    const sggMap = {
+      '51': ['춘천시','원주시','강릉시'],
+      '41': ['수원시','성남시','안산시'],
+      '45': ['완주군','익산시','정읍시']
+    };
+    const cropMap = {
+      '01': ['옥수수','콩','보리'],
+      '02': ['배추','상추','시금치'],
+      '03': ['감자','고구마']
+    };
+    const stageInfoMap = {
+      '유묘기':         { period:'10/10~10/31', waterTon:5.25, dailyTon:0.19 },
+      '분얼기':         { period:'11/01~12/10', waterTon:5.77, dailyTon:0.14 },
+      '생육재생기':     { period:'02/10~02/28', waterTon:6.26, dailyTon:0.21 },
+      '분얼 및 신장기': { period:'03/01~04/20', waterTon:22.17,dailyTon:0.43 },
+      '출수 및 등숙기': { period:'04/21~05/10', waterTon:10.95,dailyTon:0.55 }
+    };
+
+    // ─── 2) 초기 콤보 채우기 ─────────────────────────
+    $('#sido').append(
+      Object.entries(sidoList).map(([val,name])=>`<option value="${val}">${name}</option>`)
+    );
+
+    // ─── 3) 연동 처리 ───────────────────────────────
+    $('#sido').on('change', function(){
+      const arr = sggMap[$(this).val()] || [];
+      $('#sgg').html('<option value="">시군구 선택</option>')
+               .append(arr.map(n=>`<option>${n}</option>`));
+    });
+    $('#crop_gbn').on('change', function(){
+      const arr = cropMap[$(this).val()] || [];
+      $('#crop').html('<option value="">작물</option>')
+                .append(arr.map(n=>`<option>${n}</option>`));
+    });
+
+    // ─── 4) 권장 날짜 ───────────────────────────────
+    $('#exam_day').on('change', function(){
+      const d = $(this).val() || '―';
+      $('#recommended').text('권장 파종·정식시기: ' + d);
+    });
+
+    // ─── 5) 1차 요약 데이터 함수 ─────────────────────
+    function D_sido()    { return $('#sido option:selected').text()    || '-'; }
+    function D_sgg()     { return $('#sgg option:selected').text()     || '-'; }
+    function D_crop()    { return $('#crop option:selected').text()    || '-'; }
+    function D_date()    { return $('#exam_day').val()                 || '-'; }
+    function D_weather() { return $('#weather option:selected').text() || '-'; }
+    function D_irr()     { return $('#irrigation option:selected').text() || '-'; }
+    // 입력된 노지밭 면적 그대로 가져오기
+    function D_area()    { return $('#area').val()                    || '-'; }
+
+    // ─── 6) 상세 리포트 함수 ─────────────────────────
+    function stages()    { return Object.keys(stageInfoMap); }
+    function periodOf(s) { return stageInfoMap[s].period; }
+    function waterOf(s)  { return stageInfoMap[s].waterTon.toFixed(2); }
+    function dailyOf(s)  { return stageInfoMap[s].dailyTon.toFixed(2); }
+
+    // ─── 7) 검색 클릭: 두 개 테이블 모두 생성 ─────────
+    $('#search').on('click', function(){
+      // 1차 요약 테이블 (관수면적 → 입력된 면적)
+      const summary = `
+        <table>
+          <thead>
+            <tr>
+              <th>시도</th><th>시군구</th><th>작물</th>
+              <th>파종·정식시기</th><th>기상정보</th>
+              <th>관수방법</th><th>관수면적(㎡)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${D_sido()}</td>
+              <td>${D_sgg()}</td>
+              <td>${D_crop()}</td>
+              <td>${D_date()}</td>
+              <td>${D_weather()}</td>
+              <td>${D_irr()}</td>
+              <td>${D_area()}</td>
+            </tr>
+          </tbody>
+        </table>`;
+
+      // 2차 상세 리포트 테이블 (더미 데이터 유지)
+      let totalW = 0, totalD = 0;
+      let detail = `
+        <table>
+          <thead>
+            <tr>
+              <th>생육단계</th>
+              <th>생육기간<br>(월/일)</th>
+              <th>물 필요량<br>(톤/100m²)</th>
+              <th>일별 물 필요량<br>(톤/day)</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      stages().forEach(s => {
+        const w = parseFloat(waterOf(s)),
+              d = parseFloat(dailyOf(s));
+        totalW += w; totalD += d;
+        detail += `
+          <tr>
+            <td>${s}</td>
+            <td>${periodOf(s)}</td>
+            <td>${w.toFixed(2)}</td>
+            <td>${d.toFixed(2)}</td>
+          </tr>`;
+      });
+      detail += `
+          <tr>
+            <td>계</td><td></td>
+            <td>${totalW.toFixed(2)}</td>
+            <td>${totalD.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+
+      $('#result').html(summary);
+      $('#report').html(detail);
+    });
+
+    // ─── 8) 초기화 ───────────────────────────────
+    $('#reset').on('click', function(){
+      $('#sido').val('');
+      $('#sgg, #crop').html('<option value="">선택</option>');
+      $('#crop_gbn').val('');
+      $('#exam_day').val('');
+      $('#recommended').text('권장 파종·정식시기: ―');
+      $('#weather').val('');
+      $('#irrigation').val('');
+      $('#area').val('');
+      $('#result, #report').empty();
+    });
+  });
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <nav class="nav">
+      <a href="/">홈</a> |
+      <a href="/water/">물사용처방</a> |
+      <a href="/fertilizer/">비료사용처방</a>
+    </nav>
+
+    <h1>노지 밭 물사용 처방</h1>
+
+    <form id="water-form" onsubmit="return false;">
+      <div class="form-row">
+        <label>· 지역</label>
+        <select id="sido">
+          <option value="">선택</option>
+        </select>
+        <select id="sgg">
+          <option value="">시군구 선택</option>
+        </select>
+        <button type="button" class="button default">지도에서 선택</button>
+      </div>
+
+      <div class="form-row">
+        <label>· 작물</label>
+        <select id="crop_gbn">
+          <option value="">작물분류</option>
+          <option value="01">곡류</option>
+          <option value="02">엽채류</option>
+          <option value="03">근채류</option>
+        </select>
+        <select id="crop">
+          <option value="">작물</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>· 파종·정식시기</label>
+        <input type="date" id="exam_day" />
+        <span id="recommended">권장 파종·정식시기: ―</span>
+      </div>
+      <div class="form-row">
+        <label>· 기상정보</label>
+        <select id="weather">
+          <option value="">평년선택</option>
+          <option>최근3년</option>
+          <option>최근10년</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>· 관수방법</label>
+        <select id="irrigation">
+          <option value="">관수방법</option>
+          <option>점적관수</option>
+          <option>스프링클러</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>· 노지밭면적(m²)</label>
+        <input type="text" id="area" style="width:80px;" />
+      </div>
+      <div class="info">
+        * 기상정보 데이터 산정에 따라 조회내용표출이 다소 지연될 수 있습니다.
+      </div>
+      <div class="form-row">
+        <button type="button" id="search" class="button">검색</button>
+        <button type="reset" id="reset" class="button default">초기화</button>
+      </div>
+    </form>
+
+    <!-- 1차 결과 -->
+    <div id="result"></div>
+    <!-- 2차 상세 리포트 -->
+    <div id="report"></div>
+
+    <footer style="margin-top:2em;">© 흙토람</footer>
+  </div>
+</body>
+</html>

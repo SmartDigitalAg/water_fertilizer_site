@@ -1,0 +1,154 @@
+@charset "UTF-8";
+
+/* ───────────────────────────────────────────────
+   노지 밭 물사용 처방 전용 스타일 (sub.css)
+─────────────────────────────────────────────── */
+
+/* 1) 좌우 컨테이너 전체 */
+.cropDiagnosis_wrap {
+  width: 896px;
+  background: #f2f2f2;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+/* 2) 왼쪽 검색 영역 */
+.cropDiagnosis_wrap .left {
+  width: 340px;
+  padding: 15px 20px;
+  float: left;
+}
+.cropDiagnosis_wrap .left .title {
+  float: left;
+  padding: 5px 0 7px 10px;
+  font-weight: bold;
+  background: url("/static/images/common/dot_a_red.gif") no-repeat left center;
+}
+.cropDiagnosis_wrap .left .search_element1,
+.cropDiagnosis_wrap .left .search_element2 {
+  width: 260px;
+  float: left;
+  margin-bottom: 15px;
+}
+.cropDiagnosis_wrap .left .search_element1 li,
+.cropDiagnosis_wrap .left .search_element2 li {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.cropDiagnosis_wrap .left .search_select {
+  float: left;
+  margin-bottom: 5px;
+}
+.cropDiagnosis_wrap .left .search_select .sbox {
+  float: left;
+  padding: 2px 0 0 15px;
+}
+.cropDiagnosis_wrap .left .line1 {
+  float: left;
+  width: 300px;
+  margin: 10px 0 15px;
+  border-top: 2px dashed #ccc;
+}
+.cropDiagnosis_wrap .left .bt_download {
+  float: left;
+  cursor: pointer;
+}
+
+/* 3) 오른쪽 결과 영역 */
+.cropDiagnosis_wrap .right {
+  width: 410px;
+  min-height: 620px;
+  padding: 25px 30px;
+  background: #dfdfdf;
+  border-top-left-radius: 30px;
+  border-bottom-left-radius: 30px;
+  float: right;
+}
+.cropDiagnosis_wrap .right .rtitle {
+  float: left;
+  width: 330px;
+  padding: 10px 30px;
+  margin-bottom: 20px;
+  background: #999 url("/static/images/common/icon.png") no-repeat 10px 10px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+}
+.cropDiagnosis_wrap .right .title {
+  float: left;
+  width: 330px;
+  padding: 5px 0 7px 10px;
+  font-weight: bold;
+  background: url("/static/images/common/dot_a_red.gif") no-repeat left center;
+}
+.cropDiagnosis_wrap .right .line2 {
+  float: left;
+  width: 330px;
+  margin: 10px 0 15px;
+  border-top: 2px dashed #ccc;
+}
+.cropDiagnosis_wrap .right .contents {
+  float: left;
+  width: 330px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fff;
+  line-height: 1.6;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 폭 유틸리티 */
+.w70  { width:  70px; }
+.w100 { width: 100px; }
+.w105 { width: 105px; }
+.w110 { width: 110px; }
+.w150 { width: 150px; }
+.w167 { width: 167px; }
+.w200 { width: 200px; }
+.mr5  { margin-right: 5px; }
+
+/* 새로 추가된 하단 콘텐츠 스타일 */
+div#contents h6 {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #000;
+}
+
+/* 약관 (agreement) */
+dl.agreement dt {
+  padding: 20px 0 5px;
+  font-weight: bold;
+  color: #333;
+}
+dl.agreement dd {
+  padding: 5px 0 5px 10px;
+}
+ol.agreeOl li {
+  padding-top: 20px;
+  font-size: 14px;
+  color: #333;
+  font-weight: bold;
+}
+ol.agreeOl p {
+  padding: 10px 0;
+}
+ol.agreeOl dl.agreement dt {
+  padding: 10px 0 5px 10px;
+  font-weight: normal;
+}
+ol.agreeOl dl.agreement dd {
+  padding: 0 0 0 20px;
+}
+.agreeRD {
+  display: inline-block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 20px 0 10px;
+  border-top: 1px dashed #ddd;
+  text-align: center;
+  font-weight: bold;
+  color: #000;
+}
