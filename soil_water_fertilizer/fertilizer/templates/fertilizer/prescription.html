@@ -1,10 +1,235 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>비료사용처방</title>
+  <meta name="viewport" content="width=1024,user-scalable=no">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/module.css' %}">
+  <style>
+    body { background: #fcfcfc; }
+    .container { max-width: 980px; margin: 40px auto 0 auto; padding: 1.5em 2em; background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; }
+    .nav { margin-bottom: 1.5em; font-size: 1.02em; }
+    .nav a { color: #222; margin-right: 1.1em; text-decoration: none; }
+    .nav .active { font-weight: bold; }
+    h1 { margin-bottom: 1.1em; font-size: 2em; font-weight: bold; }
+    .form-box { background: #faf9f7; border: 1px solid #e0e0e0; border-radius: 7px; padding: 1.2em 1.5em; margin-bottom: 1.4em; }
+    .form-row { margin-bottom: 1em; display: flex; align-items: center; gap: 1.1em; }
+    .form-row label { min-width: 52px; font-weight: bold; color: #333; }
+    .form-row select { width: 130px; height: 30px; margin-right: 6px; }
+    .form-row .btn { background: #b09a6b; color: #fff; border: none; border-radius: 5px; padding: 6px 18px; font-weight: bold; cursor: pointer; }
+    .form-row .btn-search { background: #eae6d7; color: #2b2b2b; border: 1px solid #bcb69e; }
+    .form-row .btn:hover { opacity: 0.92; }
+    .chem-title { font-weight: bold; font-size: 1em; margin-bottom: 10px; margin-top: 25px; }
+    .chem-table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }
+    .chem-table th, .chem-table td { border: 1px solid #e0e0e0; padding: 7px 4px; text-align: center; }
+    .chem-table th { background: #faf9f5; }
+    @media (max-width: 720px) {
+      .container { padding: 1em 0.3em; }
+      .form-row { flex-direction: column; align-items: flex-start; gap: 0.4em; }
+      .form-row label { min-width: 0; }
+      .form-row select { width: 100% !important; margin-right: 0; }
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    // 더미 지역, 작물 데이터
+    const sidoList = [
+      {code: "52", name: "전북특별자치도"},
+      {code: "41", name: "경기도"},
+      {code: "48", name: "경상남도"},
+      {code: "50", name: "제주특별자치도"}
+    ];
+    const sggMap = {
+      "52": [
+        {code: "01", name: "완주군"}, {code: "02", name: "익산시"}, {code: "03", name: "전주시"}
+      ],
+      "41": [{code: "01", name: "수원시"}, {code: "02", name: "용인시"}],
+      "48": [{code: "01", name: "창원시"}, {code: "02", name: "진주시"}],
+      "50": [{code: "01", name: "제주시"}, {code: "02", name: "서귀포시"}]
+    };
+    const umdMap = {
+      "52-01": ["고산면", "비봉면", "봉동읍"],
+      "52-02": ["금마면", "낭산면"],
+      "52-03": ["덕진구", "완산구"],
+      "41-01": ["장안구", "영통구"],
+      "41-02": ["기흥구", "처인구"],
+      "48-01": ["성산구", "진해구"],
+      "48-02": ["문산읍", "이반성면"],
+      "50-01": ["구좌읍", "애월읍"],
+      "50-02": ["중문동", "대정읍"]
+    };
+    const riMap = {
+      "52-01-고산면": ["노동리", "가천리"],
+      "52-01-비봉면": ["화암리", "운암리"],
+      "52-03-덕진구": ["송천동", "인후동"],  // 동까지만 있음
+      "41-01-장안구": ["정자동", "이목동"],  // 동까지만 있음
+      "48-01-성산구": ["반지동", "내동"],    // 동까지만 있음
+      "50-01-구좌읍": ["평대리", "행원리"]
+    };
+    // 동/리 구분 체크 함수
+    function hasRi(sido, sgg, umd) {
+      return !!riMap[`${sido}-${sgg}-${umd}`];
+    }
+
+    // 작물 더미
+    const cropTypeList = [
+      {code: "00", name: "곡류(벼)"},
+      {code: "04", name: "과채류"},
+      {code: "09", name: "과수"},
+      {code: "11", name: "화훼류"}
+    ];
+    const cropMap = {
+      "00": ["벼", "보리"],
+      "04": ["토마토", "오이"],
+      "09": ["사과", "배"],
+      "11": ["장미", "국화"]
+    };
+
+    function showChemResultIfReady() {
+      let sido = $('#sido option:selected').text();
+      let sidoVal = $('#sido').val();
+      let sgg = $('#sgg option:selected').text();
+      let sggVal = $('#sgg').val();
+      let umd = $('#umd option:selected').text();
+      let umdVal = $('#umd').val();
+      let riVal = $('#ri').val();
+      let ri = $('#ri option:selected').text();
+
+      // 시군구, 읍면동까지 선택 안했으면 리셋
+      if (!sidoVal || !sggVal || !umdVal) {
+        $('#results').html('');
+        return;
+      }
+      // 리 데이터 있는 지역이면 리까지 선택시
+      if (hasRi(sidoVal, sggVal, umd)) {
+        if (!riVal) { $('#results').html(''); return; }
+      } else {
+        // 리 없는 동 지역은 동까지면 OK
+        ri = '';
+      }
+      let locArr = [sido, sgg, umd, ri].filter(x=>x&&x.indexOf("선택")<0);
+      let locText = locArr.join(' ');
+
+      // 화학성 평균 더미
+      let chem = {
+        ph: "5.9", organic: "37.1", phosph: "451.0", k: "1.4", ca: "5.4", mg: "1.7", ec: "1.3", silica: "65.2"
+      };
+      let resHtml = `
+        <div class="chem-title">※ ${locText} 화학성 평균</div>
+        <table class="chem-table">
+          <thead>
+            <tr>
+              <th rowspan="2">pH<br>(1:5)</th>
+              <th rowspan="2">유기물<br>(g/kg)</th>
+              <th rowspan="2">유효인산<br>(mg/kg)</th>
+              <th colspan="3">치환성 양이온(cmol<sup>+</sup>/kg)</th>
+              <th rowspan="2">전기전도도<br>(dS/m)</th>
+              <th rowspan="2">유효규산<br>(mg/kg)</th>
+            </tr>
+            <tr>
+              <th>칼륨</th>
+              <th>칼슘</th>
+              <th>마그네슘</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${chem.ph}</td>
+              <td>${chem.organic}</td>
+              <td>${chem.phosph}</td>
+              <td>${chem.k}</td>
+              <td>${chem.ca}</td>
+              <td>${chem.mg}</td>
+              <td>${chem.ec}</td>
+              <td>${chem.silica}</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+      $('#results').html(resHtml);
+    }
+
+    $(function(){
+      // 지역 셋팅
+      for(const s of sidoList) $('#sido').append(new Option(s.name, s.code));
+      for(const c of cropTypeList) $('#crop_type').append(new Option(c.name, c.code));
+
+      $('#sido').on('change', function(){
+        let sido = this.value;
+        $('#sgg').empty().append('<option value="">시/군/구</option>');
+        $('#umd').empty().append('<option value="">읍/면/동</option>');
+        $('#ri').empty().append('<option value="">리</option>');
+        if(!sido) return;
+        for(const s of (sggMap[sido] || [])){
+          $('#sgg').append(new Option(s.name, s.code));
+        }
+        showChemResultIfReady();
+      });
+      $('#sgg').on('change', function(){
+        let sido = $('#sido').val(), sgg = this.value;
+        $('#umd').empty().append('<option value="">읍/면/동</option>');
+        $('#ri').empty().append('<option value="">리</option>');
+        if(!sido || !sgg) return;
+        let list = umdMap[`${sido}-${sgg}`] || [];
+        for(const u of list) $('#umd').append(new Option(u, u));
+        showChemResultIfReady();
+      });
+      $('#umd').on('change', function(){
+        let sido = $('#sido').val(), sgg = $('#sgg').val(), umd = this.value;
+        $('#ri').empty().append('<option value="">리</option>');
+        if(!sido || !sgg || !umd) { showChemResultIfReady(); return; }
+        let list = riMap[`${sido}-${sgg}-${umd}`] || [];
+        if (list.length > 0) {
+          for(const r of list) $('#ri').append(new Option(r, r));
+        }
+        showChemResultIfReady();
+      });
+      $('#ri').on('change', function(){
+        showChemResultIfReady();
+      });
+
+      // 작물유형
+      $('#crop_type').on('change', function(){
+        let list = cropMap[this.value] || [];
+        $('#crop_cd').empty().append('<option value="">작물 선택</option>');
+        for(const c of list) $('#crop_cd').append(new Option(c, c));
+      });
+
+      // 검색버튼 (기존 기능 그대로, 자동출력과 중복)
+      $('#search').on('click', function(){ showChemResultIfReady(); });
+    });
+  </script>
 </head>
 <body>
-
+  <div class="container">
+    <nav class="nav">
+      <a href="/" >홈</a> |
+      <a href="/water/">물사용처방</a> |
+      <a href="/fertilizer/" class="active">비료사용처방</a>
+    </nav>
+    <h1>비료사용처방</h1>
+    <div class="form-box">
+      <div class="form-row">
+        <label>지역</label>
+        <select id="sido"><option value="">광역시/도</option></select>
+        <select id="sgg"><option value="">시/군/구</option></select>
+        <select id="umd"><option value="">읍/면/동</option></select>
+        <select id="ri"><option value="">리</option></select>
+        <button type="button" class="btn btn-search" onclick="alert('주소검색 더미입니다');">주소검색</button>
+      </div>
+      <div class="form-row">
+        <label>작물</label>
+        <select id="crop_type"><option value="">작물유형 선택</option></select>
+        <select id="crop_cd"><option value="">작물 선택</option></select>
+        <button type="button" class="btn btn-search" onclick="alert('작물명검색 더미입니다');">작물명검색</button>
+      </div>
+      <div style="text-align:right;padding-top:5px;">
+        <button id="search" type="button" class="btn">검색</button>
+      </div>
+    </div>
+    <div id="results"></div>
+  </div>
 </body>
 </html>
