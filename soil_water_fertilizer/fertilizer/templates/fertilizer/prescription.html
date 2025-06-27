@@ -1,5 +1,5 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -9,28 +9,138 @@
   <link rel="stylesheet" href="{% static 'css/module.css' %}">
   <style>
     body { background: #fcfcfc; }
-    .container { max-width: 980px; margin: 40px auto 0 auto; padding: 1.5em 2em; background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; }
+    .container {
+      max-width: 980px;
+      margin: 40px auto 0 auto;
+      padding: 1.5em 2em;
+      background: #fff;
+      border-radius: 0;
+      border: 1px solid #e0e0e0;
+    }
     .nav { margin-bottom: 1.5em; font-size: 1.02em; }
     .nav a { color: #222; margin-right: 1.1em; text-decoration: none; }
     .nav .active { font-weight: bold; }
     h1 { margin-bottom: 1.1em; font-size: 2em; font-weight: bold; }
-    .form-box { background: #faf9f7; border: 1px solid #e0e0e0; border-radius: 7px; padding: 1.2em 1.5em; margin-bottom: 1.4em; }
-    .form-row { margin-bottom: 1em; display: flex; align-items: center; gap: 1.1em; }
-    .form-row label { min-width: 52px; font-weight: bold; color: #333; }
-    .form-row select { width: 130px; height: 30px; margin-right: 6px; }
-    .form-row .btn { background: #b09a6b; color: #fff; border: none; border-radius: 5px; padding: 6px 18px; font-weight: bold; cursor: pointer; }
-    .form-row .btn-search { background: #eae6d7; color: #2b2b2b; border: 1px solid #bcb69e; }
-    .form-row .btn:hover { opacity: 0.92; }
+
+    .form-box {
+      background: #faf9f7;
+      border: 1px solid #e0e0e0;
+      border-radius: 0;
+      padding: 1.2em 1.5em;
+      margin-bottom: 1.4em;
+    }
+    .form-row {
+      margin-bottom: 1em;
+      display: flex;
+      align-items: center;
+      gap: 1.1em;
+    }
+    .form-row label, .sub-form-row label {
+      min-width: 90px;
+      width: 90px;
+      font-weight: bold;
+      color: #333;
+      text-align: left;
+      display: inline-block;
+    }
+    .form-row select,
+    .form-row input[type="text"],
+    .sub-form-row select,
+    .sub-form-row input[type="text"] {
+      border: 1px solid #bcb69e;
+      border-radius: 0;
+      background: #fff;
+      height: 38px;
+      font-size: 1em;
+      box-sizing: border-box;
+      padding: 0 10px;
+      min-width: 150px;
+    }
+    #jibun_sel, #date_sel {
+      min-width: 210px !important;
+      width: 210px !important;
+    }
+    .form-box > div[style] > #search {
+      background: #6f462a;
+      color: #fff;
+      border: 0;
+      border-radius: 0;
+      font-weight: bold;
+      font-size: 1em;
+      width: 90px;
+      height: 38px;
+      transition: background 0.15s;
+      margin-left: 0.7em;
+    }
+    .form-box > div[style] > #search:hover {
+      background: #54341b;
+    }
+    .form-row .btn-search,
+    .sub-form-row .btn-search,
+    .sub-form-row .btn-lookup {
+      background: #fff;
+      color: #222;
+      border: 2px solid #222;
+      border-radius: 0;
+      font-weight: 500;
+      padding: 6px 22px;
+      font-size: 1em;
+      height: 38px;
+      min-width: 85px;
+      box-sizing: border-box;
+      transition: background 0.2s, color 0.2s;
+    }
+    .form-row .btn-search:hover,
+    .sub-form-row .btn-search:hover,
+    .sub-form-row .btn-lookup:hover {
+      background: #f6f1ea;
+      color: #000;
+    }
+    .sub-form-row {
+      margin-bottom: 1em;
+      display: flex;
+      align-items: center;
+      gap: 1.1em;
+    }
+    .sub-form-row select {
+      width: 110px;
+      min-width: 110px;
+      height: 38px;
+      border-radius: 0;
+      border: 1px solid #bcb69e;
+      background: #fff;
+      font-size: 1em;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+    .sub-form-row input[type="text"] {
+      width: 110px !important;
+      min-width: 0;
+      height: 38px;
+      border-radius: 0;
+      border: 1px solid #bcb69e;
+      padding: 0 10px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    .sub-form-row .btn-lookup {
+      margin-left: 8px;
+    }
+    .form-row > *, .sub-form-row > * {
+      margin-right: 0 !important;
+    }
+    @media (max-width: 720px) {
+      .container { padding: 1em 0.3em; }
+      .form-row, .sub-form-row { flex-direction: column; align-items: flex-start; gap: 0.4em; }
+      .form-row label, .sub-form-row label { min-width: 0; width: auto; }
+      .form-row select, .sub-form-row select, .sub-form-row input[type="text"] { width: 100% !important; margin-right: 0; }
+      .form-row .btn, .sub-form-row .btn { width: 100%; }
+      #jibun_sel, #date_sel { min-width: 100% !important; width: 100% !important; }
+    }
     .chem-title { font-weight: bold; font-size: 1em; margin-bottom: 10px; margin-top: 25px; }
     .chem-table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }
     .chem-table th, .chem-table td { border: 1px solid #e0e0e0; padding: 7px 4px; text-align: center; }
     .chem-table th { background: #faf9f5; }
-    @media (max-width: 720px) {
-      .container { padding: 1em 0.3em; }
-      .form-row { flex-direction: column; align-items: flex-start; gap: 0.4em; }
-      .form-row label { min-width: 0; }
-      .form-row select { width: 100% !important; margin-right: 0; }
-    }
   </style>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
@@ -63,17 +173,14 @@
     const riMap = {
       "52-01-고산면": ["노동리", "가천리"],
       "52-01-비봉면": ["화암리", "운암리"],
-      "52-03-덕진구": ["송천동", "인후동"],  // 동까지만 있음
-      "41-01-장안구": ["정자동", "이목동"],  // 동까지만 있음
-      "48-01-성산구": ["반지동", "내동"],    // 동까지만 있음
+      "52-03-덕진구": ["송천동", "인후동"],
+      "41-01-장안구": ["정자동", "이목동"],
+      "48-01-성산구": ["반지동", "내동"],
       "50-01-구좌읍": ["평대리", "행원리"]
     };
-    // 동/리 구분 체크 함수
     function hasRi(sido, sgg, umd) {
       return !!riMap[`${sido}-${sgg}-${umd}`];
     }
-
-    // 작물 더미
     const cropTypeList = [
       {code: "00", name: "곡류(벼)"},
       {code: "04", name: "과채류"},
@@ -86,6 +193,20 @@
       "09": ["사과", "배"],
       "11": ["장미", "국화"]
     };
+    // 지번-일자 연동 더미
+    const jibunList = [
+      "[밭] 338-1", "[밭] 68-1", "[논] 179", "[밭] 621-8"
+    ];
+    const dateList = [
+      "2022-07-25", "2021-06-11", "2020-10-05"
+    ];
+    // 지번별 토양검정일자 매칭(더미)
+    const jibunToDates = {
+      "[밭] 338-1": ["2022-07-25", "2021-06-11"],
+      "[밭] 68-1": ["2020-10-05"],
+      "[논] 179": ["2022-07-25"],
+      "[밭] 621-8": ["2021-06-11"]
+    };
 
     function showChemResultIfReady() {
       let sido = $('#sido option:selected').text();
@@ -97,25 +218,20 @@
       let riVal = $('#ri').val();
       let ri = $('#ri option:selected').text();
 
-      // 시군구, 읍면동까지 선택 안했으면 리셋
       if (!sidoVal || !sggVal || !umdVal) {
         $('#results').html('');
+        $('.sub-form-row-wrap').remove();
         return;
       }
-      // 리 데이터 있는 지역이면 리까지 선택시
       if (hasRi(sidoVal, sggVal, umd)) {
-        if (!riVal) { $('#results').html(''); return; }
+        if (!riVal) { $('#results').html(''); $('.sub-form-row-wrap').remove(); return; }
       } else {
-        // 리 없는 동 지역은 동까지면 OK
         ri = '';
       }
       let locArr = [sido, sgg, umd, ri].filter(x=>x&&x.indexOf("선택")<0);
       let locText = locArr.join(' ');
 
-      // 화학성 평균 더미
-      let chem = {
-        ph: "5.9", organic: "37.1", phosph: "451.0", k: "1.4", ca: "5.4", mg: "1.7", ec: "1.3", silica: "65.2"
-      };
+      let chem = { ph: "5.9", organic: "37.1", phosph: "451.0", k: "1.4", ca: "5.4", mg: "1.7", ec: "1.3", silica: "65.2" };
       let resHtml = `
         <div class="chem-title">※ ${locText} 화학성 평균</div>
         <table class="chem-table">
@@ -149,18 +265,61 @@
         </table>
       `;
       $('#results').html(resHtml);
+
+      // 3개 선택지(지번조회 등) 일렬로 입력란 아래에 표시, 위치만 변경
+      if ($('.sub-form-row-wrap').length === 0) {
+        let subHtml = `
+        <div class="sub-form-row-wrap">
+          <div class="sub-form-row">
+            <label>지번조회</label>
+            <select style="width:110px;"><option>일반</option><option>산</option></select>
+            <input style="width:110px;" type="text" maxlength="4">
+            <span>-</span>
+            <input style="width:110px;" type="text" maxlength="4">
+            <button type="button" class="btn btn-lookup">조회</button>
+          </div>
+          <div class="sub-form-row">
+            <label>지번선택</label>
+            <select id="jibun_sel">
+              <option value="">지번 선택</option>
+              ${jibunList.map(x=>`<option value="${x}">${x}</option>`).join('')}
+            </select>
+          </div>
+          <div class="sub-form-row">
+            <label>토양검정일자</label>
+            <select id="date_sel">
+              <option value="">일자 선택</option>
+              ${dateList.map(x=>`<option value="${x}">${x}</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+        $('.form-row').eq(1).after(subHtml);
+
+        // 지번선택→토양검정일자 연동
+        $('#jibun_sel').on('change', function(){
+          let jibun = $(this).val();
+          let $date = $('#date_sel');
+          $date.empty();
+          let dates = jibunToDates[jibun] || [];
+          if(dates.length > 0){
+            for(const d of dates) $date.append(new Option(d, d));
+            $date.val(dates[0]); // 가장 최신일자 자동선택
+          } else {
+            $date.append('<option value="">일자 선택</option>');
+          }
+        });
+      }
     }
 
     $(function(){
-      // 지역 셋팅
       for(const s of sidoList) $('#sido').append(new Option(s.name, s.code));
       for(const c of cropTypeList) $('#crop_type').append(new Option(c.name, c.code));
-
       $('#sido').on('change', function(){
         let sido = this.value;
         $('#sgg').empty().append('<option value="">시/군/구</option>');
         $('#umd').empty().append('<option value="">읍/면/동</option>');
         $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
         if(!sido) return;
         for(const s of (sggMap[sido] || [])){
           $('#sgg').append(new Option(s.name, s.code));
@@ -171,6 +330,7 @@
         let sido = $('#sido').val(), sgg = this.value;
         $('#umd').empty().append('<option value="">읍/면/동</option>');
         $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
         if(!sido || !sgg) return;
         let list = umdMap[`${sido}-${sgg}`] || [];
         for(const u of list) $('#umd').append(new Option(u, u));
@@ -179,6 +339,7 @@
       $('#umd').on('change', function(){
         let sido = $('#sido').val(), sgg = $('#sgg').val(), umd = this.value;
         $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
         if(!sido || !sgg || !umd) { showChemResultIfReady(); return; }
         let list = riMap[`${sido}-${sgg}-${umd}`] || [];
         if (list.length > 0) {
@@ -187,17 +348,14 @@
         showChemResultIfReady();
       });
       $('#ri').on('change', function(){
+        $('.sub-form-row-wrap').remove();
         showChemResultIfReady();
       });
-
-      // 작물유형
       $('#crop_type').on('change', function(){
         let list = cropMap[this.value] || [];
         $('#crop_cd').empty().append('<option value="">작물 선택</option>');
         for(const c of list) $('#crop_cd').append(new Option(c, c));
       });
-
-      // 검색버튼 (기존 기능 그대로, 자동출력과 중복)
       $('#search').on('click', function(){ showChemResultIfReady(); });
     });
   </script>
@@ -228,6 +386,7 @@
       <div style="text-align:right;padding-top:5px;">
         <button id="search" type="button" class="btn">검색</button>
       </div>
+      <!-- 동적으로 지번/검정일자 선택지 삽입됨 -->
     </div>
     <div id="results"></div>
   </div>
