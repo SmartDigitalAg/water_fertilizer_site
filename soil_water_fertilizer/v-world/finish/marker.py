@@ -40,7 +40,7 @@ if st.session_state.trigger_search and st.session_state.query_input.strip():
             'request': 'search',
             'version': '2.0',
             'format': 'json',
-            'key': API_KEY,                  # ← 하나의 키 사용
+            'key': API_KEY,                  
             'query': st.session_state.query_input,
             'type': search_type,
             'crs': 'EPSG:4326'
