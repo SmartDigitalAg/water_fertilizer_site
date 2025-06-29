@@ -141,10 +141,30 @@
     .chem-table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }
     .chem-table th, .chem-table td { border: 1px solid #e0e0e0; padding: 7px 4px; text-align: center; }
     .chem-table th { background: #faf9f5; }
+    .presc-tables-row { display: flex; gap: 24px; margin-bottom: 18px; }
+    .presc-table-col { flex: 1 1 0; min-width: 260px; }
+    .presc-table-col h3 { font-size: 1.07em; font-weight: bold; margin: 0 0 8px 0; color: #222; }
+    @media (max-width: 900px) {
+      .presc-tables-row { flex-direction: column; gap: 10px; }
+      .presc-table-col { min-width: 0; }
+    }
+    /* ----- 복합비료 처방 표 배경색 제거 (수정됨) ----- */
+    .fert-section2 {
+      margin:30px 0 18px 0;
+      border:1px solid #f2e6da;
+      background:none !important; /* << 여기만 변경 */
+      padding:16px 12px;
+    }
+    .fert-section2 h3 { font-size:1.08em; font-weight: bold; margin:0 0 8px 0; }
+    .fert-table { width:100%; border-collapse:collapse; margin-bottom:0.6em; }
+    .fert-table td, .fert-table th { border:1px solid #e0e0e0; padding:7px 4px; }
+    .fert-table th { background: #faf9f5; }
+    .fert-table input[type="text"] { width:55px; text-align:right; }
+    .warn { font-size:11px; color:chocolate;}
   </style>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script>
-    // 더미 지역, 작물 데이터
+    // ---- [더미 지역/작물/지번/검정일 연동 데이터] ----
     const sidoList = [
       {code: "52", name: "전북특별자치도"},
       {code: "41", name: "경기도"},
@@ -171,8 +191,8 @@
       "50-02": ["중문동", "대정읍"]
     };
     const riMap = {
-      "52-01-고산면": ["노동리", "가천리"],
-      "52-01-비봉면": ["화암리", "운암리"],
+      "52-01-고산면": ["율곡리", "화정리"],
+      "52-01-비봉면": ["수선리", "이전리"],
       "52-03-덕진구": ["송천동", "인후동"],
       "41-01-장안구": ["정자동", "이목동"],
       "48-01-성산구": ["반지동", "내동"],
@@ -200,7 +220,6 @@
     const dateList = [
       "2022-07-25", "2021-06-11", "2020-10-05"
     ];
-    // 지번별 토양검정일자 매칭(더미)
     const jibunToDates = {
       "[밭] 338-1": ["2022-07-25", "2021-06-11"],
       "[밭] 68-1": ["2020-10-05"],
@@ -208,6 +227,242 @@
       "[밭] 621-8": ["2021-06-11"]
     };
 
+    // 복합비료 더미
+    const PRE_FERTS = [
+      {disp: "복합비료(21-17-17)", N: 21, P: 17, K: 17},
+      {disp: "인산칼리맞춤1호(20-18-15)", N: 20, P: 18, K: 15},
+      {disp: "야라밀라(12-11-18)", N: 12, P: 11, K: 18}
+    ];
+    const POST_FERTS = [
+      {disp: "엔케이도BS(28-0-12)", N: 28, P: 0, K: 12},
+      {disp: "원샷NK(25-0-10)", N: 25, P: 0, K: 10},
+      {disp: "맞춤추비27호(20-0-9)", N: 20, P: 0, K: 9}
+    ];
+
+    // ==== 더미값 함수 (모두 유지) ====
+    function getNBasal() { return "6.5"; }
+    function getPBasal() { return "15.6"; }
+    function getKBasal() { return "11.1"; }
+    function getNTop()   { return "0.0"; }
+    function getPTop()   { return "0.0"; }
+    function getKTop()   { return "0.0"; }
+    function getUreaBasal()   { return "3.8"; }
+    function getSuperPBasal() { return "21.1"; }
+    function getKClBasal()    { return "5.0"; }
+    function getUreaTop()     { return "0.0"; }
+    function getSuperPTop()   { return "0.0"; }
+    function getKClTop()      { return "0.0"; }
+    function getBasalFert1() { return "복합비료(21-17-17)(21-17-17)"; }
+    function getBasalFert2() { return "인산칼리맞춤1호(20-18-15)"; }
+    function getBasalFert3() { return "야라밀라(12-11-18)"; }
+    function getTopFert1()   { return "엔케이도BS(28-0-12)"; }
+    function getTopFert2()   { return "원샷NK(25-0-10)"; }
+    function getTopFert3()   { return "맞춤추비27호(20-0-9)"; }
+    function getFertN()  { return "21.0"; }
+    function getFertP()  { return "17.0"; }
+    function getFertK()  { return "17.0"; }
+    function getFertQy() { return "20"; }
+    function getPreFertTotal()   { return ""; }
+    function getPreFertTotal2()  { return ""; }
+    function getPreFertTotal3()  { return ""; }
+    function getLimingMtril() { return ""; }
+    function getCowDrop()   { return "25"; }
+    function getPigDrop()   { return "14"; }
+    function getFowlDrop()  { return "26"; }
+    function getSawdust()   { return "21"; }
+
+    // 표 전체 렌더링 (기존 + 신규 UI)
+    function renderPrescriptionResultTable() {
+      // 밑거름
+      let preF = PRE_FERTS[0];
+      let preAmt = "20", prePAdd = "0.0", preKAdd = "0.0";
+      // 웃거름
+      let postF = POST_FERTS[0];
+      let postAmt = "10", postPAdd = "0.0", postKAdd = "0.0";
+
+      return `
+  <div class="presc-result-wrap" style="margin-top:36px;">
+    <div class="presc-tables-row">
+      <div class="presc-table-col">
+        <h3>&#9654; 성분량(kg/10a)</h3>
+        <table class="item_c chem-table">
+          <thead>
+            <tr><th></th><th>질소</th><th>인산</th><th>칼리</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>밑거름</th><td>${getNBasal()}</td><td>${getPBasal()}</td><td>${getKBasal()}</td></tr>
+            <tr><th>웃거름</th><td>${getNTop()}</td><td>${getPTop()}</td><td>${getKTop()}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="presc-table-col">
+        <h3>&#9654; 추천량(kg/실면적)</h3>
+        <table class="item_c chem-table">
+          <thead>
+            <tr><th></th><th>요소</th><th>용성인비</th><th>염화칼리</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>밑거름</th><td>${getUreaBasal()}</td><td>${getSuperPBasal()}</td><td>${getKClBasal()}</td></tr>
+            <tr><th>웃거름</th><td>${getUreaTop()}</td><td>${getSuperPTop()}</td><td>${getKClTop()}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <h3> &#9654; 복합비료(시중유통비료) 추천 순위</h3>
+    <table class="item_c chem-table">
+      <thead>
+        <tr><th>추천 비료<br>(%)</th><th>1 순위</th><th>2 순위</th><th>3 순위</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>밑거름</th>
+          <td>${getBasalFert1()}</td>
+          <td>${getBasalFert2()}</td>
+          <td>${getBasalFert3()}</td>
+        </tr>
+        <tr>
+          <th>웃거름</th>
+          <td>${getTopFert1()}</td>
+          <td>${getTopFert2()}</td>
+          <td>${getTopFert3()}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="color:#7d6a53; margin-top:8px; font-size:0.96em;">
+      ※ 위 추천비료는 기준값에서 질소, 인산, 칼리 순으로 근접한 비료가 선정되었습니다.<br>
+      ※ 밑거름, 웃거름 복합비료(시중유통비료) 처방 시 추천순위를 클릭하시거나 아래화면에서 비종 선택 및 사용자 직접입력을 클릭하신 후 비료성분량을 입력하세요.
+    </div>
+    <h3> &#9654; 복합비료 처방방식</h3>
+    <table class="item_a" style="background:#f2f2f2;">
+      <tbody>
+        <tr>
+          <th style="padding-left:20px;">처방방식 선택</th>
+          <td style="padding-left:15px;">
+            <input type="radio" name="prscrptn_cnd" value="1" checked>질소기준처방(기존방식)
+            <input type="radio" name="prscrptn_cnd" value="2">인산기준처방
+            <input type="radio" name="prscrptn_cnd" value="3">칼리기준처방
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- 밑거름 복합비료 (배경색 제거됨) -->
+    <div class="fert-section2" id="pre_sec">
+      <h3>&#9654; 밑거름 복합비료 처방(kg/실면적)</h3>
+      <table class="fert-table">
+        <tr>
+          <td colspan="6" style="text-align:left;">
+            <label>비종선택
+              <select id="pre_fert_sel">
+                ${PRE_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+              </select>
+            </label>
+            <label>
+              사용자 직접 입력 <input type="checkbox" id="pre_user">
+            </label>
+            <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 종류(%)</td>
+          <td>질소: <input type="text" id="pre_n" value="${preF.N}" readonly></td>
+          <td>인산: <input type="text" id="pre_p" value="${preF.P}" readonly></td>
+          <td>칼리: <input type="text" id="pre_k" value="${preF.K}" readonly></td>
+          <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+        </tr>
+        <tr>
+          <td>복합비료 추천량</td>
+          <td colspan="4" style="text-align:left;">
+            <input type="text" id="pre_amt" value="${preAmt}">
+          </td>
+        </tr>
+        <tr>
+          <td>인산 추가필요량</td>
+          <td colspan="2"><input type="text" id="pre_pAdd" value="${prePAdd}"></td>
+          <td>칼리 추가필요량</td>
+          <td colspan="2"><input type="text" id="pre_kAdd" value="${preKAdd}"></td>
+        </tr>
+      </table>
+    </div>
+    <!-- 웃거름 복합비료 (배경색 제거됨) -->
+    <div class="fert-section2" id="post_sec">
+      <h3>&#9654; 웃거름 복합비료 처방(kg/실면적)</h3>
+      <table class="fert-table">
+        <tr>
+          <td colspan="6" style="text-align:left;">
+            <label>비종선택
+              <select id="post_fert_sel">
+                ${POST_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+              </select>
+            </label>
+            <label>
+              사용자 직접 입력 <input type="checkbox" id="post_user">
+            </label>
+            <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 종류(%)</td>
+          <td>질소: <input type="text" id="post_n" value="${postF.N}" readonly></td>
+          <td>인산: <input type="text" id="post_p" value="${postF.P}" readonly></td>
+          <td>칼리: <input type="text" id="post_k" value="${postF.K}" readonly></td>
+          <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+        </tr>
+        <tr>
+          <td>복합비료 추천량</td>
+          <td colspan="4" style="text-align:left;">
+            <input type="text" id="post_amt" value="${postAmt}">
+          </td>
+        </tr>
+        <tr>
+          <td>인산 추가필요량</td>
+          <td colspan="2"><input type="text" id="post_pAdd" value="${postPAdd}"></td>
+          <td>칼리 추가필요량</td>
+          <td colspan="2"><input type="text" id="post_kAdd" value="${postKAdd}"></td>
+        </tr>
+      </table>
+    </div>
+    <h3> &#9654; 석회질비료 선택</h3>
+    <table class="item_b">
+      <tbody>
+        <tr>
+          <th>석회질비료선택</th>
+          <td>
+            <select style="width:160px;"><option>선택</option></select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="color: chocolate; margin-top: 5px;">
+      ※ pH가 6.5 이상이거나 석회소요량이 0인 검정자료의 경우 석회질비료를 선택할 수 없습니다.
+    </div>
+    <h3> &#9654; 혼합가축분퇴비 처방(kg/실면적)</h3>
+    <table class="item_b">
+      <tbody>
+        <tr>
+          <th>가축분 혼합 비율</th>
+          <td>
+            <label>우분 :</label><input type="text" style="width:60px; text-align:right" value="${getCowDrop()}">(%)&nbsp;&nbsp;
+            <label>돈분 :</label><input type="text" style="width:60px; text-align:right" value="${getPigDrop()}">(%)&nbsp;&nbsp;
+            <label>계분 :</label><input type="text" style="width:60px; text-align:right" value="${getFowlDrop()}">(%)&nbsp;&nbsp;
+            <label>톱밥 :</label><input type="text" style="width:60px; text-align:right" value="${getSawdust()}">(%)&nbsp;&nbsp;
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="color: chocolate; margin-top: 5px;">
+      ※ 퇴비에 가축분 혼합비율이 표기되어 있을 경우 입력하세요.(미입력시 평균값 적용)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;우분, 돈분, 계분, 톱밥 중 한 종류가 50% 이상일 경우에는 기존의 우분, 돈분, 계분퇴비, 톱밥 추천량을 참고하면 됩니다.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;유기물 적정범위를 초과할 경우에는 가축분퇴비 추천량이 계산되지 않습니다.
+    </div>
+    <div style="margin:18px 0 6px 0">
+      <a href="#" class="button colorOrange">처방서 보기</a>
+      <a href="#" class="button colorWhite">초기화</a>
+    </div>
+  </div>
+      `;
+    }
+
+    // 지역, 작물 등 UI연동 (기존과 동일)
     function showChemResultIfReady() {
       let sido = $('#sido option:selected').text();
       let sidoVal = $('#sido').val();
@@ -266,7 +521,6 @@
       `;
       $('#results').html(resHtml);
 
-      // 3개 선택지(지번조회 등) 일렬로 입력란 아래에 표시, 위치만 변경
       if ($('.sub-form-row-wrap').length === 0) {
         let subHtml = `
         <div class="sub-form-row-wrap">
@@ -295,7 +549,6 @@
         </div>`;
         $('.form-row').eq(1).after(subHtml);
 
-        // 지번선택→토양검정일자 연동
         $('#jibun_sel').on('change', function(){
           let jibun = $(this).val();
           let $date = $('#date_sel');
@@ -303,7 +556,7 @@
           let dates = jibunToDates[jibun] || [];
           if(dates.length > 0){
             for(const d of dates) $date.append(new Option(d, d));
-            $date.val(dates[0]); // 가장 최신일자 자동선택
+            $date.val(dates[0]);
           } else {
             $date.append('<option value="">일자 선택</option>');
           }
@@ -358,6 +611,28 @@
       });
       $('#search').on('click', function(){ showChemResultIfReady(); });
     });
+
+    // 3. 검색 버튼에서 출력
+    function handlePrescriptionSearch() {
+      let cropType = $('#crop_type').val();
+      let cropCd = $('#crop_cd').val();
+      let jibun = $('#jibun_sel').val();
+      let date = $('#date_sel').val();
+
+      if (!cropType || !cropCd || !jibun || !date) {
+        $('#presc_results').html('');
+        return;
+      }
+      $('#presc_results').html(renderPrescriptionResultTable());
+    }
+
+    // 기존 검색버튼 이벤트 확장
+    $(function() {
+      $('#search').off('click').on('click', function() {
+        showChemResultIfReady();   // 기존
+        handlePrescriptionSearch();// 처방결과
+      });
+    });
   </script>
 </head>
 <body>
@@ -386,9 +661,9 @@
       <div style="text-align:right;padding-top:5px;">
         <button id="search" type="button" class="btn">검색</button>
       </div>
-      <!-- 동적으로 지번/검정일자 선택지 삽입됨 -->
     </div>
     <div id="results"></div>
+    <div id="presc_results"></div>
   </div>
 </body>
 </html>
