@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>비료사용처방 체험하기</title>
+    <meta name="viewport" content="width=1024,user-scalable=no">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/module.css' %}">
+    <style>
+        body { background: #fff; }
+        .container { max-width: 950px; margin: 40px auto; padding: 2em 2.5em 2em 2.5em; background: #fff; }
+        h1 { margin-bottom: 0.3em; font-size: 2.1em; }
+        .desc { color: #555; font-size: 1em; margin-bottom: 1.5em; }
+        .input-row { display: flex; align-items: center; margin-bottom: 0.7em; flex-wrap: wrap; }
+        .input-row label { font-weight: bold; margin-right: 0.8em; }
+        .input-row select, .input-row input[type="text"] { margin-right: 0.7em; }
+        .unit-radio { margin-left: 12px; font-size: 0.98em; }
+        .chem-table { width: 100%; border-collapse: collapse; margin: 1.4em 0 2em 0; background: #fafafb; }
+        .chem-table td, .chem-table th { border: 1px solid #e2e2e2; padding: 0.7em 0.9em; }
+        .chem-table th { background: #f7f7f7; width: 110px; font-size: 1em; }
+        .chem-table input { width: 80px; text-align: right; }
+        .chem-table .unit { font-size: 0.97em; color: #888; margin-left: 0.4em; }
+        .chem-table .chemlabel { font-weight: bold; }
+        .chem-table tr { height: 46px; }
+        .center-btn { text-align: center; margin-top: 1.1em; }
+        .main-btn { font-size: 1.1em; background: #e68536; color: #fff; border: none; border-radius: 5px; padding: 0.38em 1.6em; }
+        .nav-bar {
+            width: 100%;
+            border-bottom: 1px solid #bbb;
+            padding: 0 0 8px 0;
+            margin-bottom: 20px;
+            font-size: 1.09em;
+            background: none;
+        }
+        .nav-bar a {
+            text-decoration: none;
+            color: #333;
+            margin-right: 18px;
+            font-weight: normal;
+        }
+        .nav-bar a.active {
+            font-weight: bold;
+        }
+        @media (max-width: 900px) {
+            .container { padding: 1.1em; }
+            .chem-table td, .chem-table th { padding: 0.45em 0.4em; }
+            .main-btn { font-size: 1em; padding: 0.3em 1.1em; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- nav bar 추가 -->
+    <nav class="nav-bar">
+        <a href="/">홈</a> |
+        <a href="/water/">물사용처방</a> |
+        <a href="/fertilizer/experience/" class="active">비료사용처방</a>
+    </nav>
+    <h1>비료사용처방 체험하기</h1>
+    <div class="desc">
+        ※ 재배하기를 원하는 작물에 대해 임시 처방서를 제공합니다.<br>
+        시군 농업기술센터에서 지번별로 토양시료를 채취 분석한 토양검정정보를 이용하였으므로 보다 정확한 비료사용처방을 받기 원하시면 관할 농업기술센터로 문의하시기 바랍니다.<br>
+    </div>
+    <form id="fertilizer-form" autocomplete="off">
+        <!-- 1행: 경지구분 -->
+        <div class="input-row">
+            <label>경지구분</label>
+            <label><input type="radio" name="field_type" value="논" checked> 논</label>
+            <label><input type="radio" name="field_type" value="밭"> 밭</label>
+            <label><input type="radio" name="field_type" value="시설"> 시설</label>
+            <label><input type="radio" name="field_type" value="과수"> 과수</label>
+            <label><input type="radio" name="field_type" value="유기능(논)"> 유기능(논)</label>
+            <label><input type="radio" name="field_type" value="간척지(논)"> 간척지(논)</label>
+            <label><input type="radio" name="field_type" value="간척지(밭)"> 간척지(밭)</label>
+            <label><input type="radio" name="field_type" value="임야"> 임야</label>
+            <label><input type="radio" name="field_type" value="기타"> 기타</label>
+        </div>
+        <!-- 2행: 작물 -->
+        <div class="input-row">
+            <label>작물</label>
+            <select>
+                <option>작물 유형 선택</option>
+                <option>채소</option>
+                <option>곡류</option>
+            </select>
+            <select>
+                <option>작물 선택</option>
+                <option>배추</option>
+                <option>벼</option>
+            </select>
+            <button type="button" style="margin-right:8px;">작물명검색</button>
+        </div>
+        <!-- 3행: 대상지면적 -->
+        <div class="input-row">
+            <label>대상지면적</label>
+            <input type="text" id="area" style="width:90px;">
+            <label class="unit-radio"><input type="radio" name="area_gb" value="㎡" checked> 제곱미터(㎡)</label>
+            <label class="unit-radio"><input type="radio" name="area_gb" value="평"> 평</label>
+        </div>
+        <!-- 화학성 분석 값 입력 테이블 -->
+        <table class="chem-table">
+            <tr>
+                <th><label class="chemlabel">(*) pH</label></th>
+                <td><input type="text" name="ph"> </td>
+                <th><label class="chemlabel">(*) 유기물</label></th>
+                <td>
+                    <input type="text" name="om"> <span class="unit">g/kg</span>
+                </td>
+            </tr>
+            <tr>
+                <th><label class="chemlabel">(*) 유효인산</label></th>
+                <td>
+                    <input type="text" name="available_p"> <span class="unit">mg/kg</span>
+                </td>
+                <th><label class="chemlabel">(*) 칼륨</label></th>
+                <td>
+                    <input type="text" name="k"> <span class="unit">cmol+/kg</span>
+                </td>
+            </tr>
+            <tr>
+                <th><label class="chemlabel">(*) 칼슘</label></th>
+                <td>
+                    <input type="text" name="ca"> <span class="unit">cmol+/kg</span>
+                </td>
+                <th><label class="chemlabel">(*) 마그네슘</label></th>
+                <td>
+                    <input type="text" name="mg"> <span class="unit">cmol+/kg</span>
+                </td>
+            </tr>
+            <tr>
+                <th><label class="chemlabel">유효규산</label></th>
+                <td>
+                    <input type="text" name="sio2"> <span class="unit">mg/kg</span>
+                </td>
+                <th><label class="chemlabel">(*) 전기전도도</label></th>
+                <td>
+                    <input type="text" name="ec"> <span class="unit">dS/m</span>
+                </td>
+            </tr>
+            <tr>
+                <th><label class="chemlabel">석회소요량</label></th>
+                <td>
+                    <input type="text" name="lime"> <span class="unit">kg/10a</span>
+                </td>
+                <th><label class="chemlabel">질산태질소</label></th>
+                <td>
+                    <input type="text" name="no3_n"> <span class="unit">mg/kg</span>
+                </td>
+            </tr>
+            <tr>
+                <th><label class="chemlabel">양이온치환용량</label></th>
+                <td>
+                    <input type="text" name="cec"> <span class="unit">cmol+/kg</span>
+                </td>
+                <th><label class="chemlabel">암모니아태질소</label></th>
+                <td>
+                    <input type="text" name="nh4_n"> <span class="unit">mg/kg</span>
+                </td>
+            </tr>
+        </table>
+        <div class="center-btn">
+            <button type="submit" class="main-btn">결과값</button>
+        </div>
+    </form>
+</div>
+<script>
+    // 면적 변환 기능만 추가
+    const areaInput = document.getElementById('area');
+    const areaRadios = document.getElementsByName('area_gb');
+    let prevUnit = "㎡";
+    function pyToM2(py) { return (parseFloat(py) * 3.3058).toFixed(2);}
+    function m2ToPy(m2) { return (parseFloat(m2) / 3.3058).toFixed(2);}
+    areaRadios.forEach(radio => {
+        radio.addEventListener("change", function() {
+            let val = areaInput.value.trim();
+            if(val === "" || isNaN(val)) { prevUnit = this.value; return; }
+            if(this.value !== prevUnit) {
+                areaInput.value = (this.value === "㎡") ? pyToM2(val) : m2ToPy(val);
+                prevUnit = this.value;
+            }
+        });
+    });
+</script>
+</body>
+</html>
