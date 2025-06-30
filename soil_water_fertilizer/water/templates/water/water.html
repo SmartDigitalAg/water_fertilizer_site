@@ -1,17 +1,65 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>흙토람 - 노지 밭 물사용 처방</title>
-
-  <link rel="stylesheet" href="/static/css/base.css" />
-  <link rel="stylesheet" href="/static/css/module.css" />
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/module.css' %}">
   <style>
     .container { max-width: 900px; margin: 0 auto; padding: 1em; }
     h1 { margin-bottom: 0.5em; }
-    .nav { margin-bottom: 1em; }
-    .nav a { margin-right: 1em; color: #333; text-decoration: none; }
+    /* nav bar 스타일 (base.html과 동일) */
+    nav { margin-bottom: 1em; }
+    .nav-menu { display: inline-block; position: relative; }
+    .nav-link, .dropdown-link {
+      color: #6c2394;
+      text-decoration: none;
+      padding: 4px 13px;
+      font-size: 1.03em;
+      transition: background 0.15s;
+    }
+    .nav-link:hover, .dropdown-link:hover {
+      background: #f7eafd;
+      color: #47215a;
+      border-radius: 6px;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      left: 0;
+      min-width: 190px;
+      background: #fff;
+      box-shadow: 0 6px 18px 0 rgba(120,30,180,0.11);
+      border: 1px solid #dedede;
+      border-radius: 8px;
+      z-index: 100;
+      padding: 0.3em 0;
+    }
+    .dropdown-content a {
+      display: block;
+      padding: 12px 18px;
+      margin: 0;
+      font-size: 1em;
+      white-space: nowrap;
+      background: transparent;
+      color: #592db3;
+      transition: background 0.17s, color 0.17s;
+    }
+    .dropdown-content a:hover {
+      background: #f1e5fd;
+      color: #3d176b;
+    }
+    .nav-menu:hover .dropdown-content {
+      display: block;
+      animation: slideDown 0.18s cubic-bezier(.38,.1,.49,.94);
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px);}
+      to   { opacity: 1; transform: translateY(0);}
+    }
+    /* 나머지 water 폼 스타일 */
     .form-row { margin: 0.5em 0; }
     select, input[type="date"], input[type="text"] { margin-right: 0.5em; }
     .button { padding: 0.4em 1em; border: none; background: #6c615e; color: #fff; cursor: pointer; }
@@ -19,10 +67,12 @@
     .info { color: red; margin-top: 0.5em; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #aaa; padding: 0.5em; text-align: center; }
-    /* 상세 리포트는 요약 아래에 살짝 여백 추가 */
     #report { margin-top: 2em; }
+    @media (max-width: 600px) {
+      nav { font-size: 0.98em; }
+      .dropdown-content { min-width: 145px; }
+    }
   </style>
-
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
@@ -81,7 +131,6 @@
     function D_date()    { return $('#exam_day').val()                 || '-'; }
     function D_weather() { return $('#weather option:selected').text() || '-'; }
     function D_irr()     { return $('#irrigation option:selected').text() || '-'; }
-    // 입력된 노지밭 면적 그대로 가져오기
     function D_area()    { return $('#area').val()                    || '-'; }
 
     // ─── 6) 상세 리포트 함수 ─────────────────────────
@@ -171,11 +220,20 @@
 
 <body>
   <div class="container">
-    <nav class="nav">
-      <a href="/">홈</a> |
-      <a href="/water/">물사용처방</a> |
-      <a href="/fertilizer/">비료사용처방</a>
+    <!-- nav 바 시작 -->
+    <nav>
+      <a class="nav-link" href="{% url 'home' %}">홈</a> |
+      <a class="nav-link" href="{% url 'water:index' %}">물사용처방</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방 ▼</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
     </nav>
+    <!-- nav 바 끝 -->
 
     <h1>노지 밭 물사용 처방</h1>
 
