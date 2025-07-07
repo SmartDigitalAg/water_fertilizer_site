@@ -1,9 +1,54 @@
+/*!*좌우 그라데이션*!*/
+/*body {*/
+/*  margin: 0;*/
+/*  font-family: 'Noto Sans KR', sans-serif;*/
+/*  background: linear-gradient(to right, #e8dbc7 0%, #d2f0ed 100%);*/
+/*  background-attachment: fixed;*/
+/*  color: #333;*/
+/*}*/
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', sans-serif;
+  background: linear-gradient(180deg, #e8dbc7 0%, #d2f0ed 100%);
+  background-attachment: fixed;
+  color: #333;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+}
+
+header .logo {
+  height: 80px;
+}
+
+.user-actions {
+  display: flex;
+  gap: 20px;
+}
+
+.user-actions button {
+  background: none;
+  border: none;
+  font-size: 1em;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .icon {
   display: inline-block;
   background-image: url("../images/icon.png");
   background-repeat: no-repeat;
 }
 
+/* 개별 아이콘 위치 */
 .icon1  { width: 18px; height: 17px; background-position:    0px   0px; }   /* 검색 돋보기 */
 .icon2  { width: 13px; height: 13px; background-position:  -21px   0px; }  /* 더보기 화살표 */
 .icon3  { width: 12px; height: 14px; background-position:  -37px   0px; }  /* 로그인 자물쇠 */
@@ -44,3 +89,93 @@
 .icon36 { width: 80px; height: 70px; background-position: -0px -117px; } /* 배너 아이콘1 */
 .icon37 { width: 85px; height: 75px; background-position: -83px -111px;} /* 배너 아이콘2 */
 .icon38 { width: 85px; height: 70px; background-position: -171px -117px; } /* 배너 아이콘3 */
+
+.main-title {
+  text-align: center;
+  margin-top: 100px;
+  font-size: 2.8em;
+  font-weight: 700;
+  color: #222;
+}
+
+.sub-title {
+  text-align: center;
+  font-size: 1.2em;
+  color: #666;
+  margin-bottom: 60px;
+}
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 0 40px 80px;
+  margin-top: 80px; /* 카드만 아래로 더 내림 */
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  width: 320px;
+  height: 300px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  color: #333;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+  font-size: 1.4em;
+  margin-bottom: 0.5em;
+}
+
+.card p {
+  font-size: 1em;
+  color: #555;
+  line-height: 1.5;
+}
+
+.card .icon-area {
+  height: 100px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.soil-bg {
+  background: linear-gradient(135deg, #e7d6c5, #f9eee3);
+}
+
+.water-bg {
+  background: linear-gradient(135deg, #d6f2f0, #e0f8ff);
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 16px 24px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  header .logo {
+    height: 60px;
+  }
+}
