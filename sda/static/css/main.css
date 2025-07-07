@@ -1,4 +1,4 @@
-/*!*좌우 그라데이션*!*/
+/*좌우 그라데이션*/
 /*body {*/
 /*  margin: 0;*/
 /*  font-family: 'Noto Sans KR', sans-serif;*/
@@ -7,13 +7,23 @@
 /*  color: #333;*/
 /*}*/
 
+/*세로 그라데이션*/
+/*body {*/
+/*  margin: 0;*/
+/*  font-family: 'Noto Sans KR', sans-serif;*/
+/*  background: linear-gradient(180deg, #e8dbc7 0%, #d2f0ed 100%);*/
+/*  background-attachment: fixed;*/
+/*  color: #333;*/
+/*}*/
+
 body {
   margin: 0;
   font-family: 'Noto Sans KR', sans-serif;
-  background: linear-gradient(180deg, #e8dbc7 0%, #d2f0ed 100%);
+  background: linear-gradient(135deg, #f1eee7, #e6f6f5);
   background-attachment: fixed;
   color: #333;
 }
+
 
 header {
   display: flex;
