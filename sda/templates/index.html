@@ -7,247 +7,172 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <style>
-    /* ————— 기존 스타일 그대로 ————— */
     body {
       margin: 0;
       font-family: 'Noto Sans KR', sans-serif;
-      background: #fff;
+      background: linear-gradient(135deg, #f1eee7, #e6f6f5);
       color: #333;
     }
-    .wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
+
     header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
-    }
-    header .logo { height: 60px; }
-    header .search-box {
-      flex: 1; max-width: 360px; margin: 0 24px;
-      display: flex; align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      overflow: hidden;
-      height: 36px;
-    }
-    header .search-box input {
-      flex: 1; border: none; padding: 6px 12px; outline: none;
-    }
-    header .search-box button {
-      background: #553d1b; width: 36px; height: 36px;
-      border: none; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; padding: 0;
-    }
-    header .user-actions {
-      display: flex; align-items: center; gap: 16px;
-    }
-    header .user-actions button {
-      display: flex; align-items: center; gap: 4px;
-      background: none; border: none; color: #553d1b;
-      font-size: 0.94em; cursor: pointer;
+      align-items: center;
+      padding: 20px 60px;
     }
 
-    /* ————— nav + 드롭다운 추가 부분 ————— */
-    nav {
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
+    header .logo {
+      height: 80px;
     }
-    nav ul {
-      display: flex; justify-content: center; gap: 24px;
-      list-style: none; margin: 0; padding: 0;
+
+    .user-actions {
+      display: flex;
+      gap: 20px;
     }
-    nav ul li {
-      position: relative; /* 드롭다운 기준 */
-    }
-    nav ul li a {
-      text-decoration: none;
-      color: #553d1b;
-      font-size: 0.96em;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: background 0.13s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    nav ul li a:hover {
-      background: #f9ede4;
-    }
-    /* 드롭다운 토글 */
-    nav ul li.dropdown > a {
+
+    .user-actions button {
+      background: none;
+      border: none;
+      font-size: 1em;
+      color: #333;
       cursor: pointer;
-    }
-    nav ul li.dropdown .dropdown-menu {
-      display: none;
-      position: absolute; top: 100%; left: 0;
-      background: #fff;
-      border: 1px solid #eee; border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      white-space: nowrap; z-index: 10;
-      margin-top: 4px;
-    }
-    nav ul li.dropdown.open .dropdown-menu {
-      display: block;
-    }
-    nav ul li.dropdown .dropdown-menu li a {
-      display: block;
-      padding: 8px 16px;
-      color: #553d1b;
-      font-size: 0.94em;
-    }
-    nav ul li.dropdown .dropdown-menu li a:hover {
-      background: #f2e3bf; /* 연흙색 하이라이트 */
-    }
-    /* 열린마당 옆 햄버거(icon15) */
-    nav ul li.open-menu a i.icon15 {
-      transform: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* ————— 이하 기존 스타일 계속 ————— */
-    .icon-carousel {
-      position: relative; margin: 24px 0;
+    .icon {
+      display: inline-block;
+      background-image: url("{% static 'images/icon.png' %}");
+      background-repeat: no-repeat;
     }
-    .icon-carousel .track {
-      display: flex; overflow-x: auto; gap: 24px; padding: 0 64px;
-      scroll-behavior: smooth;
+
+    .icon3  { width: 12px; height: 14px; background-position: -37px   0px; }
+    .icon4  { width: 14px; height: 14px; background-position: -52px   0px; }
+    .icon27 { width: 70px; height: 70px; background-position: 0px -42px; }
+    .icon37 { width: 85px; height: 75px; background-position: -83px -111px; }
+
+    .main-title {
+      text-align: center;
+      margin-top: 100px;
+      font-size: 2.8em;
+      font-weight: 700;
+      color: #222;
     }
-    .icon-carousel .track::-webkit-scrollbar { display: none; }
-    .icon-carousel button {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; padding: 8px;
+
+    .sub-title {
+      text-align: center;
+      font-size: 1.2em;
+      color: #666;
+      margin-bottom: 60px;
     }
-    .icon-carousel .prev { left: 16px; }
-    .icon-carousel .next { right: 16px; }
-    .icon-box {
-      flex: 0 0 auto; width: 100px; text-align: center;
-      padding: 14px; border: 1px solid #eee; border-radius: 12px;
-      background: #faf7f3; transition: border .15s, box-shadow .15s;
+
+    .card-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 0 40px 80px;
+      margin-top: 80px; /* 카드만 아래로 더 내림 */
+      flex-wrap: wrap;
     }
-    .icon-box:hover {
-      border-color: #eab76d; box-shadow: 0 2px 10px rgba(234,183,109,0.5);
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      width: 320px;
+      height: 300px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: #333;
     }
-    .icon-box .icon {
-      display: block; margin: 0 auto 8px;
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
-    .icon-box .icon-title {
-      font-size: 0.94em; font-weight: 500; color: #613f14;
+
+    .card h3 {
+      font-size: 1.4em;
+      margin-bottom: 0.5em;
     }
-    .banners {
-      display: flex; justify-content: center; gap: 24px; margin: 24px 0 40px;
+
+    .card p {
+      font-size: 1em;
+      color: #555;
+      line-height: 1.5;
     }
-    .banner {
-      text-align: center; width: 140px; padding: 12px;
-      border: 1px solid #eee; border-radius: 10px; background: #fff;
-      transition: border .15s, box-shadow .15s;
+
+    .card .icon-area {
+      height: 100px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .banner:hover {
-      border-color: #bf9723; box-shadow: 0 2px 8px rgba(191,151,35,0.3);
+
+    .soil-bg {
+      background: linear-gradient(135deg, #e7d6c5, #f9eee3);
     }
-    .banner .icon {
-      display: block; margin: 0 auto 8px;
+
+    .water-bg {
+      background: linear-gradient(135deg, #d6f2f0, #e0f8ff);
     }
-    .banner span {
-      display: block; font-size: 0.92em; color: #333;
+
+    @media (max-width: 768px) {
+      header {
+        padding: 16px 24px;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+      }
+      header .logo {
+        height: 60px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="wrapper">
-    <!-- 헤더 -->
-    <header>
-      <img src="{% static 'images/h1_logo.png' %}" alt="흙토람" class="logo">
-      <div class="search-box">
-        <input type="text" placeholder="통합검색">
-        <button><i class="icon icon1"></i></button>
-      </div>
-      <div class="user-actions">
-        <button><i class="icon icon3"></i>로그인</button>
-        <button><i class="icon icon4"></i>ENGLISH</button>
-      </div>
-    </header>
+  <header>
+    <img src="{% static 'images/h1_logo.png' %}" alt="흙토람 로고" class="logo">
+    <div class="user-actions">
+      <button><i class="icon icon3"></i>로그인</button>
+      <button><i class="icon icon4"></i>ENGLISH</button>
+    </div>
+  </header>
 
-    <!-- 내비게이션 -->
-    <nav>
-      <ul>
-        <li><a href="#">SIS</a></li>
-        <li><a href="#">토양과 농업환경</a></li>
-        <li><a href="#">토양검정정보</a></li>
+  <main>
+    <div class="main-title">흙토람 서비스</div>
+    <div class="sub-title">토양과 작물에 맞는 처방 서비스를 만나보세요</div>
 
-        <!-- dropdown -->
-        <li class="dropdown">
-          <a class="active">비료사용처방</a>
-          <ul class="dropdown-menu">
-            <li><a href="#">비료사용처방</a></li>
-            <li><a href="#">비료사용처방 체험하기</a></li>
-            <li><a href="#">비료 표준사용량 처방</a></li>
-          </ul>
-        </li>
+    <div class="card-container">
+      <a href="#" class="card">
+        <div class="icon-area soil-bg">
+          <i class="icon icon27"></i>
+        </div>
+        <h2>비료사용처방</h2>
+        <p>작물별 비료 적정량을 추천해주는 서비스를 확인해보세요.</p>
+      </a>
 
-        <li><a href="#">밭작물물사용처방</a></li>
-        <li><a href="#">통계자료</a></li>
-        <li><a href="#">토양정보신청</a></li>
-        <li><a href="#">열린마당</a></li>
+      <a href="#" class="card">
+        <div class="icon-area water-bg">
+          <i class="icon icon37"></i>
+        </div>
+        <h2>물사용처방</h2>
+        <p>밭작물의 생육단계별 물 필요량을 간편하게 확인해보세요.</p>
+      </a>
+    </div>
+  </main>
 
-        <!-- 햄버거(icon15): 열린마당 옆 -->
-        <li class="open-menu">
-          <a href="#"><i class="icon icon15"></i></a>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- 아이콘 캐러셀 -->
-    <section class="icon-carousel">
-      <button class="prev"><i class="icon icon16"></i></button>
-      <div class="track">
-        <div class="icon-box"><i class="icon icon27"></i><div class="icon-title">비료사용처방</div></div>
-        <div class="icon-box"><i class="icon icon28"></i><div class="icon-title">토양검정정보</div></div>
-        <div class="icon-box"><i class="icon icon29"></i><div class="icon-title">농경지화학성</div></div>
-        <div class="icon-box"><i class="icon icon30"></i><div class="icon-title">토양특성</div></div>
-        <div class="icon-box"><i class="icon icon31"></i><div class="icon-title">작물별 적성도</div></div>
-        <div class="icon-box"><i class="icon icon32"></i><div class="icon-title">토양수분정보</div></div>
-        <div class="icon-box"><i class="icon icon33"></i><div class="icon-title">현장진단</div></div>
-      </div>
-      <button class="next"><i class="icon icon17"></i></button>
-    </section>
-
-    <!-- 배너 섹션 -->
-    <section class="banners">
-      <div class="banner"><i class="icon icon36"></i><span>토양도 신청</span></div>
-      <div class="banner"><i class="icon icon37"></i><span>물사용처방 체험</span></div>
-      <div class="banner"><i class="icon icon38"></i><span>비료사용처방 체험</span></div>
-    </section>
-  </div>
-
-  <script>
-    // 캐러셀 버튼
-    document.querySelector('.icon-carousel .prev').onclick = () => {
-      document.querySelector('.icon-carousel .track')
-              .scrollBy({ left: -200, behavior: 'smooth' });
-    };
-    document.querySelector('.icon-carousel .next').onclick = () => {
-      document.querySelector('.icon-carousel .track')
-              .scrollBy({ left:  200, behavior: 'smooth' });
-    };
-
-    // 비료사용처방 드롭다운 클릭 토글
-    document.querySelectorAll('nav ul li.dropdown > a').forEach(toggle => {
-      toggle.addEventListener('click', e => {
-        e.preventDefault();
-        toggle.parentElement.classList.toggle('open');
-      });
-    });
-    // 외부 클릭 시 드롭다운 닫기
-    document.addEventListener('click', e => {
-      if (!e.target.closest('nav ul li.dropdown')) {
-        document.querySelectorAll('nav ul li.dropdown.open')
-                .forEach(li => li.classList.remove('open'));
-      }
-    });
-  </script>
 </body>
 </html>
