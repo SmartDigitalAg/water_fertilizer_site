@@ -1,0 +1,46 @@
+.icon {
+  display: inline-block;
+  background-image: url("../images/icon.png");
+  background-repeat: no-repeat;
+}
+
+.icon1  { width: 18px; height: 17px; background-position:    0px   0px; }   /* 검색 돋보기 */
+.icon2  { width: 13px; height: 13px; background-position:  -21px   0px; }  /* 더보기 화살표 */
+.icon3  { width: 12px; height: 14px; background-position:  -37px   0px; }  /* 로그인 자물쇠 */
+.icon4  { width: 14px; height: 14px; background-position:  -52px   0px; }  /* English */
+.icon5  { width:  9px; height: 10px; background-position:  -70px   0px; }  /* 상단 ↑ 버튼 */
+.icon6  { width: 14px; height:  9px; background-position:  -83px   0px; }  /* 스토리 화살표 */
+.icon7  { width:  9px; height: 12px; background-position: -112px   0px; }  /* 재생 ▶ */
+.icon8  { width: 26px; height: 26px; background-position: -125px   0px; }  /* 콜센터 */
+.icon9  { width: 14px; height: 12px; background-position: -154px   0px; }  /* home 아이콘 */
+.icon10 { width: 23px; height: 23px; background-position: -171px   0px; }  /* 파일 아이콘 */
+.icon11 { width: 12px; height: 14px; background-position: -223px   0px; }  /* 수정 아이콘 0*/
+.icon12 { width: 12px; height: 14px; background-position: -238px   0px; }  /* 로그아웃 */
+.icon13 { width: 12px; height: 13px; background-position: -253px   0px; }  /* 관리자 */
+.icon14 { width: 18px; height: 19px; background-position:    0px -20px; }  /* 체험하기 → 화살표 */
+.icon15 { width: 21px; height: 18px; background-position:  -21px -20px; }  /* 전체메뉴 토글 */
+.icon16 { width:  8px; height: 12px; background-position: -85px -23px; }  /* prev */
+.icon17 { width:  8px; height: 12px; background-position:-114px -23px; }  /* next */
+.icon18 { width: 11px; height: 12px; background-position: -98px -23px; }  /* stop */
+.icon19 { width:  8px; height: 12px; background-position: -45px -23px; }  /* main prev */
+.icon20 { width:  8px; height: 12px; background-position: -74px -23px; }  /* main next */
+.icon21 { width: 11px; height: 12px; background-position: -58px -23px; }  /* main stop */
+.icon22 { width:  9px; height: 12px; background-position:-100px   0px; }  /* main play */
+.icon23 { width:  9px; height: 11px; background-position:-127px -29px; }  /* first */
+.icon24 { width:  6px; height: 11px; background-position:-141px -29px; }  /* prev */
+.icon25 { width:  6px; height: 11px; background-position:-152px -29px; }  /* next */
+.icon26 { width:  9px; height: 11px; background-position:-163px -29px; }  /* last */
+ /* 아이콘 */
+.icon27 { width: 70px; height: 70px; background-position:    0px -42px; } /* 아이콘1 */
+.icon28 { width: 61px; height: 75px; background-position:  -74px -42px;} /* 아이콘2 */
+.icon29 { width: 58px; height: 70px; background-position: -138px -42px;} /* 아이콘3 */
+.icon30 { width: 69px; height: 70px; background-position: -199px -42px; } /* 아이콘4 */
+.icon31 { width: 70px; height: 75px; background-position: -271px -42px;} /* 아이콘5 */
+.icon32 { width: 70px; height: 70px; background-position: -345px -42px;} /* 아이콘6 */
+.icon33 { width: 70px; height: 70px; background-position: -418px -42px; } /* 아이콘7 */
+.icon34 { width: 63px; height: 70px; background-position: -351px -117px;} /* 아이콘8 */
+.icon35 { width: 80px; height: 70px; background-position: -415px -117px; } /* 아이콘9 */
+/* !* 배너 아이콘 *!*/
+.icon36 { width: 80px; height: 70px; background-position: -0px -117px; } /* 배너 아이콘1 */
+.icon37 { width: 85px; height: 75px; background-position: -83px -111px;} /* 배너 아이콘2 */
+.icon38 { width: 85px; height: 70px; background-position: -171px -117px; } /* 배너 아이콘3 */
