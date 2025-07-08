@@ -10,11 +10,11 @@
     nav { margin-bottom: 1em; }
     .nav-menu { display: inline-block; position: relative; }
     .nav-link, .dropdown-link {
-      color: #6c2394; text-decoration: none; padding: 4px 13px; font-size: 1.03em;
+      color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em;
       transition: background 0.15s;
     }
     .nav-link:hover, .dropdown-link:hover {
-      background: #f7eafd; color: #47215a; border-radius: 6px;
+      background: #f5eee5; color: #222; border-radius: 6px;
     }
     .dropdown-content {
       display: none; position: absolute; left: 0; min-width: 190px; background: #fff;
@@ -23,9 +23,9 @@
     }
     .dropdown-content a {
       display: block; padding: 12px 18px; font-size: 1em; white-space: nowrap;
-      color: #592db3; background: transparent; transition: background 0.17s, color 0.17s;
+      color: #222; background: transparent; transition: background 0.17s, color 0.17s;
     }
-    .dropdown-content a:hover { background: #f1e5fd; color: #3d176b; }
+    .dropdown-content a:hover { background: #f5eee5; color: #222; }
     .nav-menu:hover .dropdown-content {
       display: block; animation: slideDown 0.18s cubic-bezier(.38,.1,.49,.94);
     }
@@ -159,7 +159,7 @@
       <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
       <a class="nav-link" href="{% url 'water:water' %}">물사용처방</a> |
       <span class="nav-menu">
-        <a class="nav-link" href="javascript:void(0)">비료사용처방 ▼</a>
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
         <div class="dropdown-content">
           <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
           <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
