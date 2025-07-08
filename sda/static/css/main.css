@@ -24,7 +24,6 @@ body {
   color: #333;
 }
 
-
 header {
   display: flex;
   justify-content: space-between;
@@ -137,6 +136,8 @@ header .logo {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-decoration: none;
   color: #333;
+  position: relative;    /* hover 메뉴 위한 추가 */
+  overflow: visible;
 }
 
 .card:hover {
@@ -177,6 +178,53 @@ header .logo {
 .water-bg {
   background: linear-gradient(135deg, #d6f2f0, #e0f8ff);
 }
+
+/* ------------------------- */
+/* 카드 Hover 메뉴 스타일 추가 */
+.card-hover-menu .hover-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: absolute;
+  top: 130px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 88%;
+  background: rgba(255,255,255,1);
+  border-radius: 16px;
+  box-shadow: 0 2px 14px rgba(180,160,90,0.07);
+  padding: 32px 0 24px 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+
+.card-hover-menu:hover .hover-menu,
+.card-hover-menu:focus-within .hover-menu {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.card-hover-menu .hover-menu a {
+  font-size: 1.3em;
+  font-weight: 700;
+  /*color: #6b4c27;*/
+  color: #222;
+  text-align: center;
+  text-decoration: none;
+  transition: color 0.15s;
+  padding: 4px 0;
+  border-radius: 8px;
+}
+.card-hover-menu .hover-menu a:hover {
+  /*color: #c69a51;*/
+  /*color: #222;*/
+  color: #6b4c27;
+  background: #f9eee3;
+}
+/* ------------------------- */
 
 @media (max-width: 768px) {
   header {

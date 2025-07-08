@@ -22,14 +22,20 @@
     <div class="sub-title">토양과 작물에 맞는 처방 서비스를 만나보세요</div>
 
     <div class="card-container">
-      <a href="#" class="card">
+      <!-- 비료사용처방 카드 -->
+      <div class="card card-hover-menu">
         <div class="icon-area soil-bg">
           <i class="icon icon27"></i>
         </div>
         <h2>비료사용처방</h2>
         <p>작물별 비료 적정량을 추천해주는 서비스를 확인해보세요.</p>
-      </a>
-
+        <div class="hover-menu">
+          <a href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </div>
+      <!-- 물사용처방 카드 -->
       <a href="{% url 'water:water' %}" class="card">
         <div class="icon-area water-bg">
           <i class="icon icon37"></i>
@@ -39,6 +45,5 @@
       </a>
     </div>
   </main>
-
 </body>
 </html>
