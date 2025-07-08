@@ -129,7 +129,7 @@ header .logo {
   border-radius: 20px;
   padding: 24px;
   width: 320px;
-  height: 300px;
+  height: 310px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
@@ -145,14 +145,20 @@ header .logo {
 }
 
 .card h2 {
-  font-size: 1.4em;
+  font-size: 2em;          /* 훨씬 크게 */
+  font-weight: 800;        /* 굵게 */
   margin-bottom: 0.5em;
+  margin-top: 10px;
+  color: #222;             /* 좀 더 진한색 */
+  text-align: left;        /* 왼쪽정렬 원하면 left, 가운데는 center */
 }
 
 .card p {
-  font-size: 1em;
-  color: #555;
-  line-height: 1.5;
+  font-size: 1.08em;       /* 살짝 더 크게 */
+  color: #7d7d7d;          /* 좀 더 밝은 그레이 */
+  margin-top: 0.8em;
+  line-height: 1.6;
+  text-align: left;        /* 왼쪽정렬. center로 바꿔도 됨 */
 }
 
 .card .icon-area {
