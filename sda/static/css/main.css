@@ -146,7 +146,7 @@ header .logo {
 
 .card h2 {
   font-size: 2em;          /* 훨씬 크게 */
-  font-weight: 800;        /* 굵게 */
+  font-weight: 750;        /* 굵게 */
   margin-bottom: 0.5em;
   margin-top: 10px;
   color: #222;             /* 좀 더 진한색 */
