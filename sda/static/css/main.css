@@ -186,7 +186,7 @@ header .logo {
   flex-direction: column;
   gap: 18px;
   position: absolute;
-  top: 130px;
+  top: 125px;
   left: 0;
   right: 0;
   margin: auto;
@@ -208,7 +208,7 @@ header .logo {
 }
 
 .card-hover-menu .hover-menu a {
-  font-size: 1.3em;
+  font-size: 1.4em;
   font-weight: 700;
   /*color: #6b4c27;*/
   color: #222;
