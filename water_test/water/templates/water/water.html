@@ -7,8 +7,8 @@
   <title>흙토람 - 노지 밭 물사용 처방</title>
   <style>
     .container { max-width: 900px; margin: 0 auto; padding: 1em;
-      border: 1px solid #e0e0e0;   /* <== 외곽선 추가! */
-      border-radius: 0;             /* 각진 스타일 원하면 0, 둥글게 하려면 10px 정도로 */}
+      border: 1px solid #e0e0e0;
+      border-radius: 0; }
     nav { margin-bottom: 1em; }
     .nav-menu { display: inline-block; position: relative; }
     .nav-link, .dropdown-link {
@@ -31,7 +31,6 @@
     .nav-menu:hover .dropdown-content {
       display: block; animation: slideDown 0.18s cubic-bezier(.38,.1,.49,.94);
     }
-
     .form-box {
       background: #faf9f7;
       border: 1px solid #e0e0e0;
@@ -39,7 +38,6 @@
       margin-bottom: 1.4em;
       border-radius: 0;
     }
-
     @keyframes slideDown { from { opacity: 0; transform: translateY(-12px);} to { opacity: 1; transform: translateY(0);} }
     .form-row { margin: 0.5em 0; }
     select, input[type="date"], input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px;  font-size:1em; padding:0 10px;
@@ -50,21 +48,24 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #aaa; padding: 0.5em; text-align: center; }
     #report { margin-top: 2em; }
+    .result-address { font-weight: bold; margin: 1em 0 0.4em 2px; color: #222; font-size: 1.05em; }
     @media (max-width: 600px) {
       nav { font-size: 0.98em; }
       .dropdown-content { min-width: 145px; }
     }
+    .latlon-inline {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 18px;
+      color: #232;
+      font-size: 0.98em;
+    }
+    .search-address-row input[type="text"] {min-width:200px;}
   </style>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
   $(function(){
-    // 데이터 정의
-    const sidoList = { '51':'강원특별자치도', '41':'경기도', '45':'전북특별자치도' };
-    const sggMap = {
-      '51':['춘천시','원주시','강릉시'],
-      '41':['수원시','성남시','안산시'],
-      '45':['완주군','익산시','정읍시']
-    };
+    // 작물 정보 등 기존 데이터
     const cropMap = {
       '01':['옥수수','콩','보리'],
       '02':['땅콩','참깨'],
@@ -77,43 +78,92 @@
       '분얼 및 신장기': { period:'03/01~04/20', waterTon:22.17, dailyTon:0.43 },
       '출수 및 등숙기': { period:'04/21~05/10', waterTon:10.95, dailyTon:0.55 }
     };
-    // 초기 콤보박스 세팅
-    $('#sido').append(
-      Object.entries(sidoList).map(([val, name]) => `<option value="${val}">${name}</option>`)
-    );
-    // 시군구 연동
-    $('#sido').on('change', function(){
-      const arr = sggMap[$(this).val()] || [];
-      $('#sgg').html('<option value="">시군구 선택</option>')
-        .append(arr.map(n => `<option>${n}</option>`));
-    });
-    // 작물 연동
+
+    // ----------- 작물 연동 (기존 기능) -------------
     $('#crop_gbn').on('change', function(){
       const arr = cropMap[$(this).val()] || [];
       $('#crop').html('<option value="">작물</option>')
         .append(arr.map(n => `<option>${n}</option>`));
     });
-    // 권장 파종 시기 표시
+
+    // ----------- 권장 파종 시기 표시 (기존) ----------
     $('#exam_day').on('change', function(){
       const d = $(this).val() || '―';
       $('#recommended').text('권장 파종·정식시기: ' + d);
     });
-    // 검색 클릭: 요약/상세 테이블 생성
+
+    // -------------- 주소 → 위경도 변환 (Django로 요청) --------------
+    $('#address-search-btn').on('click', function(){
+      const query = $('#address-input').val().trim();
+      if (!query) {
+        alert('주소(지번, 도로명, 건물명)를 입력하세요.');
+        return;
+      }
+      $('#latlon-inline').html('검색 중...');
+      $.ajax({
+        url: "{% url 'water:get_latlon' %}",
+        data: { q: query },
+        dataType: "json",
+        success: function(res){
+          if (res.lat && res.lon) {
+            $('#latlon-inline').html(`<b>위도</b>: ${res.lat} &nbsp; <b>경도</b>: ${res.lon}`);
+            $('#lat').val(res.lat);
+            $('#lon').val(res.lon);
+            // ======= 주소 정보 hidden에 JSON string으로 저장 =======
+            let addrObj = {
+              parcel_addr: res.parcel_addr || "",
+              road_addr: res.road_addr || ""
+            };
+            $('#address-confirmed').val(JSON.stringify(addrObj));
+          } else {
+            $('#latlon-inline').html('<span style="color:red;">검색 결과가 없습니다.</span>');
+            $('#lat').val('');
+            $('#lon').val('');
+            $('#address-confirmed').val('');
+          }
+        },
+        error: function(xhr){
+          let msg = 'API 통신 오류';
+          if (xhr.responseJSON && xhr.responseJSON.error) {
+            msg = xhr.responseJSON.error;
+          }
+          $('#latlon-inline').html('<span style="color:red;">' + msg + '</span>');
+          $('#lat').val('');
+          $('#lon').val('');
+          $('#address-confirmed').val('');
+        }
+      });
+    });
+
+    // ------------------ 검색 클릭: 결과 표시 ------------------
     $('#search').on('click', function(){
       const D = id => $(`#${id} option:selected`).text() || $(`#${id}`).val() || '-';
+      let parcel_addr = "-";
+      let road_addr = "-";
+      try {
+        const addrObj = JSON.parse($('#address-confirmed').val() || "{}");
+        parcel_addr = addrObj.parcel_addr || "-";
+        road_addr = addrObj.road_addr || "-";
+      } catch(e) {}
+
+      // ======= 결과 주소 2종 모두 출력 =======
       $('#result').html(`
+        <div class="result-address">
+          <div>지번주소: ${parcel_addr}</div>
+          <div>도로명주소: ${road_addr}</div>
+        </div>
         <table>
           <thead>
             <tr>
-              <th>시도</th><th>시군구</th><th>작물</th>
-              <th>파종·정식시기</th><th>기상정보</th>
-              <th>관수방법</th><th>관수면적(㎡)</th>
+              <th>작물</th>
+              <th>파종·정식시기</th>
+              <th>기상정보</th>
+              <th>관수방법</th>
+              <th>관수면적(㎡)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>${D('sido')}</td>
-              <td>${D('sgg')}</td>
               <td>${D('crop')}</td>
               <td>${$('#exam_day').val() || '-'}</td>
               <td>${D('weather')}</td>
@@ -153,11 +203,12 @@
         </table>
       `);
     });
-    // 초기화
+
+    // ------------------- 초기화 ------------------------
     $('#reset').on('click', function(){
-      $('#sido').val('');
-      $('#sgg, #crop').html('<option value="">선택</option>');
-      $('#crop_gbn, #exam_day, #weather, #irrigation, #area').val('');
+      $('#address-input, #lat, #lon, #address-confirmed').val('');
+      $('#latlon-inline').html('');
+      $('#crop_gbn, #crop, #exam_day, #weather, #irrigation, #area').val('');
       $('#recommended').text('권장 파종·정식시기: ―');
       $('#result, #report').empty();
     });
@@ -182,14 +233,17 @@
     <!-- //nav -->
 
     <h1>노지 밭 물사용 처방</h1>
-
     <form id="water-form" onsubmit="return false;">
       <div class="form-box">
-        <div class="form-row">
+        <!-- 주소 입력 및 위도/경도 결과 인라인 -->
+        <div class="form-row search-address-row">
           <label>· 지역</label>
-          <select id="sido"><option value="">선택</option></select>
-          <select id="sgg"><option value="">시군구 선택</option></select>
-          <button type="button" class="button default">지도에서 선택</button>
+          <input type="text" id="address-input" placeholder="지번·도로명·건물명 입력" />
+          <button type="button" class="button default" id="address-search-btn">주소검색</button>
+          <span class="latlon-inline" id="latlon-inline"></span>
+          <input type="hidden" id="lat">
+          <input type="hidden" id="lon">
+          <input type="hidden" id="address-confirmed" />
         </div>
         <div class="form-row">
           <label>· 작물</label>
@@ -235,7 +289,6 @@
         </div>
       </div>
     </form>
-
     <div id="result"></div>
     <div id="report"></div>
   </div>
