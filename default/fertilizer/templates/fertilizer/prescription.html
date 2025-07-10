@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>비료사용처방</title>
+  <meta name="viewport" content="width=1024,user-scalable=no">
+  <style>
+    body { background:#fcfcfc; font-family:'Noto Sans KR',sans-serif; color:#222; margin:0;}
+    .container { max-width:980px; margin:40px auto 0; padding:1.5em 2em; background:#fff; border:1px solid #e0e0e0;}
+    h1 { margin-bottom:1.1em; font-size:2em; font-weight:bold; }
+    nav { margin-bottom: 1em; }
+    .nav-link { color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em; }
+    .nav-link:hover { background: #f5eee5; color: #222; border-radius: 6px; }
+    .nav-menu { display:inline-block; position:relative; }
+    .dropdown-content { display:none; position:absolute; left:0; min-width:200px; background:#fff; box-shadow:0 6px 18px 0 rgba(120,30,180,0.11); border:1px solid #dedede; border-radius:8px; z-index:100; }
+    .dropdown-link { display:block; padding:12px 18px; color:#222; font-size:1em; text-decoration:none; }
+    .dropdown-link:hover { background:#f5eee5; color:#222; }
+    .nav-menu:hover .dropdown-content { display:block; }
+    .form-box { background:#faf9f7; border:1px solid #e0e0e0; padding:1.2em 1.5em; margin-bottom:1.4em;}
+    .form-row { margin-bottom:1em; display:flex; align-items:center; gap:1em; flex-wrap:wrap;}
+    .form-row label { min-width:90px; font-weight:bold; color:#333; }
+    .form-row select, .form-row input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px; font-size:1em; padding:0 10px; min-width:110px; }
+    .btn-search, .btn { background:#fff; color:#222; border:2px solid #222; padding:6px 22px; font-size:1em; height:38px; min-width:85px; cursor:pointer; }
+    .btn-search:hover, .btn:hover { background:#f6f1ea; color:#000; }
+    .btn { border:0; background:#6f462a; color:#fff; min-width:90px; }
+    .btn:hover { background:#54341b; }
+    @media (max-width: 720px) {
+      .container { padding:1em 0.3em; }
+      .form-row { flex-direction:column; align-items:flex-start; gap:0.4em; }
+      .form-row label { min-width:0; }
+      .form-row select, .form-row input[type="text"] { width:100%!important; }
+      .btn, .btn-search { width:100%; }
+    }
+    .chem-title { font-weight: bold; font-size: 1em; margin-bottom:10px; margin-top:25px; }
+    .chem-table { width:100%; border-collapse:collapse; margin-top:0.5em;}
+    .chem-table th, .chem-table td { border:1px solid #e0e0e0; padding:7px 4px; text-align:center; }
+    .chem-table th { background:#faf9f5; }
+    .presc-tables-row { display:flex; gap:24px; margin-bottom:18px; }
+    .presc-table-col { flex:1 1 0; min-width:260px;}
+    .presc-table-col h3 { font-size:1.07em; font-weight:bold; margin:0 0 8px 0; color:#222;}
+    @media (max-width:900px) { .presc-tables-row { flex-direction:column; gap:10px; } .presc-table-col { min-width:0;} }
+    .fert-section2 { margin:30px 0 18px 0; border:1px solid #f2e6da; background:none; padding:16px 12px; }
+    .fert-table { width:100%; border-collapse:collapse; margin-bottom:0.6em; }
+    .fert-table th, .fert-table td { border:1px solid #e0e0e0; padding:7px 4px; }
+    .fert-table th { background: #faf9f5; }
+    .fert-table input[type="text"] { width:55px; text-align:right; }
+    .warn { font-size:11px; color:chocolate;}
+    .sub-form-row-wrap { margin-bottom:1em; }
+    .sub-form-row { margin-bottom:0.5em; display:flex; align-items:center; gap:1em; flex-wrap:wrap;}
+    .sub-form-row label { min-width:90px; font-weight:bold; }
+    .dummy-note { color:#7d6a53; margin-top:8px; font-size:0.96em; }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    // --- 데이터 정의 ---
+    const sidoList = [
+      {code: "52", name: "전북특별자치도"}, {code: "41", name: "경기도"},
+      {code: "48", name: "경상남도"}, {code: "50", name: "제주특별자치도"}
+    ];
+    const sggMap = {
+      "52":[{code:"01",name:"완주군"},{code:"02",name:"익산시"},{code:"03",name:"전주시 덕진구"}],
+      "41":[{code:"01",name:"군포시"},{code:"02",name:"김포시"}],
+      "48":[{code:"01",name:"밀양시"},{code:"02",name:"진주시"}],
+      "50":[{code:"01",name:"제주시"},{code:"02",name:"서귀포시"}]
+    };
+    const umdMap = {
+      "52-01":["고산면","비봉면","봉동읍"], "52-02":["금마면","낭산면"], "52-03":["금암동","진북동"],
+      "41-01":["금정동","당동"], "41-02":["마산동","월곶면"],
+      "48-01":["남포동","내일동"], "48-02":["봉곡동","봉래동"],
+      "50-01":["구좌읍","애월읍"], "50-02":["중문동","대정읍"]
+    };
+    const riMap = {
+      "52-01-고산면":["율곡리","화정리"], "52-01-비봉면":["수선리","이전리"], "52-01-봉동읍":["구만리","구미리"],
+      "52-02-금마면":["동고도리","서고도리"], "52-02-낭산면":["용기리","호암리"],
+      "41-02-월곶면":["갈산리","개곡리"],
+      "50-01-구좌읍":["평대리","행원리"], "50-01-애월읍":["상귀리","소길리"],
+      "50-02-대정읍":["보성리","신도리"]
+    };
+    function hasRi(sido, sgg, umd) { return !!riMap[`${sido}-${sgg}-${umd}`]; }
+    const cropTypeList = [
+      {code:"00",name:"곡류(벼)"},{code:"04",name:"과채류"},{code:"09",name:"과수"},{code:"11",name:"화훼류"}
+    ];
+    const cropMap = {
+      "00":["벼","밭벼"], "04":["토마토","오이"], "09":["사과","배"], "11":["장미","국화"]
+    };
+    const jibunList = ["[밭] 338-1", "[밭] 68-1", "[논] 179", "[밭] 621-8"];
+    const dateList = ["2022-07-25", "2021-06-11", "2020-10-05"];
+    const jibunToDates = {
+      "[밭] 338-1": ["2022-07-25", "2021-06-11"], "[밭] 68-1": ["2020-10-05"],
+      "[논] 179": ["2022-07-25"], "[밭] 621-8": ["2021-06-11"]
+    };
+    // --- 처방 더미값 ---
+    const PRE_FERTS = [
+      {disp:"복합비료(21-17-17)",N:21,P:17,K:17},
+      {disp:"인산칼리맞춤1호(20-18-15)",N:20,P:18,K:15},
+      {disp:"야라밀라(12-11-18)",N:12,P:11,K:18}
+    ];
+    const POST_FERTS = [
+      {disp:"엔케이도BS(28-0-12)",N:28,P:0,K:12},
+      {disp:"원샷NK(25-0-10)",N:25,P:0,K:10},
+      {disp:"맞춤추비27호(20-0-9)",N:20,P:0,K:9}
+    ];
+    // --- 결과표 렌더링 ---
+    function renderPrescriptionResultTable() {
+      let preF = PRE_FERTS[0], preAmt = "20", prePAdd = "0.0", preKAdd = "0.0";
+      let postF = POST_FERTS[0], postAmt = "10", postPAdd = "0.0", postKAdd = "0.0";
+      return `
+      <div class="presc-result-wrap" style="margin-top:36px;">
+        <div class="presc-tables-row">
+          <div class="presc-table-col">
+            <h3>&#9654; 성분량(kg/10a)</h3>
+            <table class="chem-table"><thead>
+              <tr><th></th><th>질소</th><th>인산</th><th>칼리</th></tr></thead><tbody>
+              <tr><th>밑거름</th><td>6.5</td><td>15.6</td><td>11.1</td></tr>
+              <tr><th>웃거름</th><td>0.0</td><td>0.0</td><td>0.0</td></tr>
+            </tbody></table>
+          </div>
+          <div class="presc-table-col">
+            <h3>&#9654; 추천량(kg/실면적)</h3>
+            <table class="chem-table"><thead>
+              <tr><th></th><th>요소</th><th>용성인비</th><th>염화칼리</th></tr></thead><tbody>
+              <tr><th>밑거름</th><td>3.8</td><td>21.1</td><td>5.0</td></tr>
+              <tr><th>웃거름</th><td>0.0</td><td>0.0</td><td>0.0</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <h3> &#9654; 복합비료(시중유통비료) 추천 순위</h3>
+        <table class="chem-table">
+          <thead>
+            <tr><th>추천 비료<br>(%)</th><th>1 순위</th><th>2 순위</th><th>3 순위</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>밑거름</th><td>${PRE_FERTS[0].disp}</td><td>${PRE_FERTS[1].disp}</td><td>${PRE_FERTS[2].disp}</td></tr>
+            <tr><th>웃거름</th><td>${POST_FERTS[0].disp}</td><td>${POST_FERTS[1].disp}</td><td>${POST_FERTS[2].disp}</td></tr>
+          </tbody>
+        </table>
+        <div class="dummy-note">
+          ※ 위 추천비료는 기준값에서 질소, 인산, 칼리 순으로 근접한 비료가 선정되었습니다.<br>
+          ※ 밑거름, 웃거름 복합비료(시중유통비료) 처방 시 추천순위를 클릭하시거나 아래화면에서 비종 선택 및 사용자 직접입력을 클릭하신 후 비료성분량을 입력하세요.
+        </div>
+        <h3> &#9654; 복합비료 처방방식</h3>
+        <table style="background:#f2f2f2; width:100%;">
+          <tr>
+            <th style="padding-left:20px; text-align:left;">처방방식 선택</th>
+            <td style="padding-left:15px;">
+              <input type="radio" name="prscrptn_cnd" value="1" checked>질소기준처방(기존방식)
+              <input type="radio" name="prscrptn_cnd" value="2">인산기준처방
+              <input type="radio" name="prscrptn_cnd" value="3">칼리기준처방
+            </td>
+          </tr>
+        </table>
+        <div class="fert-section2" id="pre_sec">
+          <h3>&#9654; 밑거름 복합비료 처방(kg/실면적)</h3>
+          <table class="fert-table">
+            <tr>
+              <td colspan="6" style="text-align:left;">
+                <label>비종선택
+                  <select id="pre_fert_sel">
+                    ${PRE_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+                  </select>
+                </label>
+                <label>
+                  사용자 직접 입력 <input type="checkbox" id="pre_user">
+                </label>
+                <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+              </td>
+            </tr>
+            <tr>
+              <td>복합비료 종류(%)</td>
+              <td>질소: <input type="text" id="pre_n" value="${preF.N}" readonly></td>
+              <td>인산: <input type="text" id="pre_p" value="${preF.P}" readonly></td>
+              <td>칼리: <input type="text" id="pre_k" value="${preF.K}" readonly></td>
+              <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+            </tr>
+            <tr>
+              <td>복합비료 추천량</td>
+              <td colspan="4" style="text-align:left;">
+                <input type="text" id="pre_amt" value="${preAmt}">
+              </td>
+            </tr>
+            <tr>
+              <td>인산 추가필요량</td>
+              <td colspan="2"><input type="text" id="pre_pAdd" value="${prePAdd}"></td>
+              <td>칼리 추가필요량</td>
+              <td colspan="2"><input type="text" id="pre_kAdd" value="${preKAdd}"></td>
+            </tr>
+          </table>
+        </div>
+        <div class="fert-section2" id="post_sec">
+          <h3>&#9654; 웃거름 복합비료 처방(kg/실면적)</h3>
+          <table class="fert-table">
+            <tr>
+              <td colspan="6" style="text-align:left;">
+                <label>비종선택
+                  <select id="post_fert_sel">
+                    ${POST_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+                  </select>
+                </label>
+                <label>
+                  사용자 직접 입력 <input type="checkbox" id="post_user">
+                </label>
+                <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+              </td>
+            </tr>
+            <tr>
+              <td>복합비료 종류(%)</td>
+              <td>질소: <input type="text" id="post_n" value="${postF.N}" readonly></td>
+              <td>인산: <input type="text" id="post_p" value="${postF.P}" readonly></td>
+              <td>칼리: <input type="text" id="post_k" value="${postF.K}" readonly></td>
+              <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+            </tr>
+            <tr>
+              <td>복합비료 추천량</td>
+              <td colspan="4" style="text-align:left;">
+                <input type="text" id="post_amt" value="${postAmt}">
+              </td>
+            </tr>
+            <tr>
+              <td>인산 추가필요량</td>
+              <td colspan="2"><input type="text" id="post_pAdd" value="${postPAdd}"></td>
+              <td>칼리 추가필요량</td>
+              <td colspan="2"><input type="text" id="post_kAdd" value="${postKAdd}"></td>
+            </tr>
+          </table>
+        </div>
+        <h3> &#9654; 석회질비료 선택</h3>
+        <table style="width:100%;">
+          <tr>
+            <th>석회질비료선택</th>
+            <td>
+              <select style="width:160px;"><option>선택</option></select>
+            </td>
+          </tr>
+        </table>
+        <div style="color:chocolate; margin-top:5px;">
+          ※ pH가 6.5 이상이거나 석회소요량이 0인 검정자료의 경우 석회질비료를 선택할 수 없습니다.
+        </div>
+        <h3> &#9654; 혼합가축분퇴비 처방(kg/실면적)</h3>
+        <table style="width:100%;">
+          <tr>
+            <th>가축분 혼합 비율</th>
+            <td>
+              <label>우분 :</label><input type="text" style="width:60px;text-align:right" value="25">(%)&nbsp;
+              <label>돈분 :</label><input type="text" style="width:60px;text-align:right" value="14">(%)&nbsp;
+              <label>계분 :</label><input type="text" style="width:60px;text-align:right" value="26">(%)&nbsp;
+              <label>톱밥 :</label><input type="text" style="width:60px;text-align:right" value="21">(%)&nbsp;
+            </td>
+          </tr>
+        </table>
+        <div style="color:chocolate; margin-top:5px;">
+          ※ 퇴비에 가축분 혼합비율이 표기되어 있을 경우 입력하세요.(미입력시 평균값 적용)
+        </div>
+        <div style="margin:18px 0 6px 0">
+          <a href="#" class="btn colorOrange">처방서 보기</a>
+          <a href="#" class="btn colorWhite" style="background:#ccc;color:#333;">초기화</a>
+        </div>
+      </div>
+      `;
+    }
+
+    // --- 지역, 작물 등 UI 연동 ---
+    function showChemResultIfReady() {
+      let sido = $('#sido option:selected').text(), sidoVal = $('#sido').val();
+      let sgg = $('#sgg option:selected').text(), sggVal = $('#sgg').val();
+      let umd = $('#umd option:selected').text(), umdVal = $('#umd').val();
+      let riVal = $('#ri').val(), ri = $('#ri option:selected').text();
+      if (!sidoVal || !sggVal || !umdVal) { $('#results').html(''); $('.sub-form-row-wrap').remove(); return; }
+      if (hasRi(sidoVal, sggVal, umd)) { if (!riVal) { $('#results').html(''); $('.sub-form-row-wrap').remove(); return; } } else { ri = ''; }
+      let locArr = [sido, sgg, umd, ri].filter(x=>x&&x.indexOf("선택")<0);
+      let locText = locArr.join(' ');
+      let chem = { ph: "5.9", organic: "37.1", phosph: "451.0", k: "1.4", ca: "5.4", mg: "1.7", ec: "1.3", silica: "65.2" };
+      let resHtml = `<div class="chem-title">※ ${locText} 화학성 평균</div>
+      <table class="chem-table"><thead>
+        <tr><th rowspan="2">pH<br>(1:5)</th><th rowspan="2">유기물<br>(g/kg)</th><th rowspan="2">유효인산<br>(mg/kg)</th>
+        <th colspan="3">치환성 양이온(cmol<sup>+</sup>/kg)</th><th rowspan="2">전기전도도<br>(dS/m)</th><th rowspan="2">유효규산<br>(mg/kg)</th></tr>
+        <tr><th>칼륨</th><th>칼슘</th><th>마그네슘</th></tr>
+      </thead>
+      <tbody><tr>
+        <td>${chem.ph}</td><td>${chem.organic}</td><td>${chem.phosph}</td>
+        <td>${chem.k}</td><td>${chem.ca}</td><td>${chem.mg}</td><td>${chem.ec}</td><td>${chem.silica}</td>
+      </tr></tbody></table>`;
+      $('#results').html(resHtml);
+
+      // 지번/검정일자 입력 서브폼 한 번만 추가
+      if ($('.sub-form-row-wrap').length === 0) {
+        let subHtml = `<div class="sub-form-row-wrap">
+          <div class="sub-form-row"><label>지번조회</label>
+            <select><option>일반</option><option>산</option></select>
+            <input type="text" maxlength="4" style="width:110px;">
+            <span>-</span>
+            <input type="text" maxlength="4" style="width:110px;">
+            <button type="button" class="btn-search" onclick="alert('지번조회 더미')">조회</button>
+          </div>
+          <div class="sub-form-row"><label>지번선택</label>
+            <select id="jibun_sel">
+              <option value="">지번 선택</option>
+              ${jibunList.map(x=>`<option value="${x}">${x}</option>`).join('')}
+            </select>
+          </div>
+          <div class="sub-form-row"><label>토양검정일자</label>
+            <select id="date_sel">
+              <option value="">일자 선택</option>
+              ${dateList.map(x=>`<option value="${x}">${x}</option>`).join('')}
+            </select>
+          </div>
+        </div>`;
+        $('.form-row').eq(1).after(subHtml);
+
+        $('#jibun_sel').on('change', function(){
+          let jibun = $(this).val(), $date = $('#date_sel');
+          $date.empty();
+          let dates = jibunToDates[jibun] || [];
+          if (dates.length > 0) {
+            for(const d of dates) $date.append(new Option(d, d));
+            $date.val(dates[0]);
+          } else {
+            $date.append('<option value="">일자 선택</option>');
+          }
+        });
+      }
+    }
+
+    $(function(){
+      for(const s of sidoList) $('#sido').append(new Option(s.name, s.code));
+      for(const c of cropTypeList) $('#crop_type').append(new Option(c.name, c.code));
+      $('#sido').on('change', function(){
+        let sido = this.value;
+        $('#sgg').empty().append('<option value="">시/군/구</option>');
+        $('#umd').empty().append('<option value="">읍/면/동</option>');
+        $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
+        if(!sido) return;
+        for(const s of (sggMap[sido] || [])) $('#sgg').append(new Option(s.name, s.code));
+        showChemResultIfReady();
+      });
+      $('#sgg').on('change', function(){
+        let sido = $('#sido').val(), sgg = this.value;
+        $('#umd').empty().append('<option value="">읍/면/동</option>');
+        $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
+        if(!sido || !sgg) return;
+        let list = umdMap[`${sido}-${sgg}`] || [];
+        for(const u of list) $('#umd').append(new Option(u, u));
+        showChemResultIfReady();
+      });
+      $('#umd').on('change', function(){
+        let sido = $('#sido').val(), sgg = $('#sgg').val(), umd = this.value;
+        $('#ri').empty().append('<option value="">리</option>');
+        $('.sub-form-row-wrap').remove();
+        if(!sido || !sgg || !umd) { showChemResultIfReady(); return; }
+        let list = riMap[`${sido}-${sgg}-${umd}`] || [];
+        if(list.length > 0) { for(const r of list) $('#ri').append(new Option(r, r)); }
+        showChemResultIfReady();
+      });
+      $('#ri').on('change', function(){ $('.sub-form-row-wrap').remove(); showChemResultIfReady(); });
+      $('#crop_type').on('change', function(){
+        let list = cropMap[this.value] || [];
+        $('#crop_cd').empty().append('<option value="">작물 선택</option>');
+        for(const c of list) $('#crop_cd').append(new Option(c, c));
+      });
+      $('#search').on('click', function(){ showChemResultIfReady(); handlePrescriptionSearch(); });
+    });
+
+    function handlePrescriptionSearch() {
+      let cropType = $('#crop_type').val(), cropCd = $('#crop_cd').val();
+      let jibun = $('#jibun_sel').val(), date = $('#date_sel').val();
+      if (!cropType || !cropCd || !jibun || !date) { $('#presc_results').html(''); return; }
+      $('#presc_results').html(renderPrescriptionResultTable());
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+      <a class="nav-link" href="{% url 'water:water' %}">물사용처방</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
+    </nav>
+    <h1>비료사용처방</h1>
+    <div class="form-box">
+      <div class="form-row">
+        <label>지역</label>
+        <select id="sido"><option value="">광역시/도</option></select>
+        <select id="sgg"><option value="">시/군/구</option></select>
+        <select id="umd"><option value="">읍/면/동</option></select>
+        <select id="ri"><option value="">리</option></select>
+        <button type="button" class="btn-search" onclick="alert('주소검색 더미입니다');">주소검색</button>
+      </div>
+      <div class="form-row">
+        <label>작물</label>
+        <select id="crop_type"><option value="">작물유형 선택</option></select>
+        <select id="crop_cd"><option value="">작물 선택</option></select>
+        <button type="button" class="btn-search" onclick="alert('작물명검색 더미입니다');">작물명검색</button>
+      </div>
+      <div style="text-align:right;padding-top:5px;">
+        <button id="search" type="button" class="btn">검색</button>
+      </div>
+    </div>
+    <div id="results"></div>
+    <div id="presc_results"></div>
+  </div>
+</body>
+</html>

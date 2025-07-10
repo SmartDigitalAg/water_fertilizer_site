@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>작물별 비료 표준사용량 처방</title>
+  <meta name="viewport" content="width=1024,user-scalable=no">
+  <style>
+    body { background: #fff; font-family: 'Noto Sans KR', sans-serif; color: #222; margin:0; }
+    .container { max-width: 950px; margin: 0 auto; padding: 1.5em 2em; }
+    h1 { margin-bottom: .7em; font-size:2em;}
+    nav { margin-bottom: 1em; }
+    .nav-link { color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em; }
+    .nav-link:hover { background: #f5eee5; color: #222; border-radius: 6px; }
+    .nav-menu { display: inline-block; position: relative; }
+    .dropdown-content { display: none; position: absolute; left: 0; min-width: 190px; background: #fff; box-shadow: 0 6px 18px 0 rgba(120,30,180,0.11); border: 1px solid #dedede; border-radius: 8px; z-index: 100; }
+    .dropdown-link { display: block; padding: 12px 18px; color: #222; font-size: 1em; text-decoration: none; }
+    .dropdown-link:hover { background: #f5eee5; color: #222; }
+    .nav-menu:hover .dropdown-content { display: block; }
+    .form-row { margin-bottom: .7em; }
+    label { font-weight: bold; margin-right: .6em; }
+    select, input[type="text"] { margin-right: .5em; }
+    .button { padding: .4em 1em; background: #6c615e; color: #fff; border: none; cursor: pointer; border-radius: 4px;}
+    .button.reset { background: #ccc; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #aaa; padding: .5em; text-align: center; }
+    .section { display: flex; flex-wrap: wrap; gap: 2em; }
+    .section > div { flex: 1; min-width: 340px; }
+    .section-wrap { border: 1px solid #e0e0e0; border-radius: 6px; padding: 1em; margin-bottom: 1.3em; background: #fff; }
+    .recommend-box { margin-top: 1.2em; border: 1px solid #e0e0e0; padding: 1em; border-radius: 6px; }
+    .radio-row label { font-weight: normal; margin-right: .8em; }
+    .fert-section2 { margin-top: 1em; border: 1px solid #e0e0e0; background: #fff; border-radius: 7px; padding: 1.2em 1.2em 0.7em 1.2em; }
+    .fert-table input[type="text"] { width: 60px; }
+    .fert-table label { margin-right: 0; font-weight: normal; }
+    .fert-table .warn { color: #cc3300; font-size: 0.95em; }
+    @media (max-width: 820px) {
+      .section { flex-direction: column; gap: 10px; }
+      .section-wrap { padding: 0.8em 0.3em; }
+    }
+    .area-row { display: flex; align-items: center; gap: 1.7em; margin-bottom: .7em;}
+    .area-label { min-width: 96px; }
+    .unit-radio { margin-left: 7px; }
+    @media (max-width: 620px) {
+      .area-row { flex-direction: column; align-items: flex-start; gap: 0.2em; }
+    }
+    .dummy-msg { font-size: 0.93em; color: #cc6600; margin: .6em 0 .2em 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+      <a class="nav-link" href="{% url 'water:water' %}">물사용처방</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
+    </nav>
+    <h1>작물별 비료 표준사용량 처방</h1>
+    <div class="form-row">
+      <label class="area-label">작물 선택</label>
+      <select id="crop_gbn"><option value="">선택</option></select>
+      <select id="crop_cd"><option value="">선택</option></select>
+    </div>
+    <div class="form-row area-row">
+      <label class="area-label">대상지면적</label>
+      <input type="text" id="area" style="width:90px;" value="">
+      <label class="unit-radio"><input type="radio" name="area_gb" checked> 제곱미터(㎡)</label>
+      <label class="unit-radio"><input type="radio" name="area_gb"> 평</label>
+    </div>
+    <div class="form-row">
+      <button id="search" class="button">검색</button>
+      <button id="reset" class="button reset">초기화</button>
+    </div>
+    <div id="results"></div>
+  </div>
+<script>
+  // 더미 데이터 및 함수
+  const cropTypes = {
+    '00': '곡류(벼)',  '01': '곡류(기타)', '02': '유지류', '03': '서류', '04': '과채류',
+    '05': '근채류', '06': '인경채류', '07': '경엽채소류', '08': '산채류',
+    '09': '과수', '10': '약용작물', '11': '화훼류', '12': '사료작물', '13': '기타'
+  };
+  const cropListMap = {
+    '00': ['벼'], '01': ['보리','밀','수수'],
+    '02': ['땅콩','유채'], '03': ['감자','고구마'],
+    '04': ['토마토', '오이', '고추'], '05': ['생강', '연근'],
+    '06': ['마늘','양파'], '07': ['배추','부추'],
+    '08': ['냉이','달래'], '09': ['사과', '배'],
+    '10': ['감초','강황'], '11': ['장미', '국화'],
+    '12': ['목초', '청보리'], '13': ['기타']
+  };
+  function pyToM2(py) { return (parseFloat(py) * 3.3058).toFixed(2);}
+  function m2ToPy(m2) { return (parseFloat(m2) / 3.3058).toFixed(2);}
+  function rand(min,max) {return (Math.random()*(max-min)+min).toFixed(1);}
+  function dummyRanks(stage) {
+    if(stage==='pre') return ['복합비료(21-17-17)','인산칼리맞춤1호(20-18-15)','야라밀라(12-11-18)'];
+    return ['엔케이도BS(28-0-12)','원샷NK(25-0-10)','맞춤추비27호(20-0-9)'];
+  }
+  const PRE_FERTS = [
+    {N:21, P:6, K:8, disp:'흙사랑21 (21-6-8)'},
+    {N:21, P:17, K:17, disp:'복합비료(21-17-17)'},
+    {N:20, P:18, K:15, disp:'인산칼리맞춤1호 (20-18-15)'}
+  ];
+  const POST_FERTS = [
+    {N:18, P:0, K:14, disp:'엔케이804 (18-0-14)'},
+    {N:28, P:0, K:12, disp:'엔케이도BS(28-0-12)'},
+    {N:25, P:0, K:10, disp:'원샷NK(25-0-10)'}
+  ];
+  // 셀렉트박스 동적 구성
+  window.addEventListener('DOMContentLoaded', function() {
+    let cropGbn = document.getElementById('crop_gbn');
+    for (let key in cropTypes)
+      cropGbn.appendChild(new Option(cropTypes[key], key));
+    cropGbn.addEventListener('change', function() {
+      let cropCd = document.getElementById('crop_cd');
+      cropCd.innerHTML = '';
+      cropCd.appendChild(new Option('선택', ''));
+      (cropListMap[this.value]||[]).forEach(n=>cropCd.appendChild(new Option(n,n)));
+    });
+    // 면적 단위 변환
+    let areaInput = document.getElementById('area');
+    let areaRadios = document.getElementsByName('area_gb');
+    let currentUnit = 'm2';
+    areaRadios.forEach(radio => radio.addEventListener('change', function(){
+      let val = areaInput.value;
+      if(!val || isNaN(val)) return;
+      if(this.parentNode.textContent.includes('㎡') && currentUnit !== 'm2') {
+        areaInput.value = pyToM2(val); currentUnit = 'm2';
+      } else if(this.parentNode.textContent.includes('평') && currentUnit !== 'py') {
+        areaInput.value = m2ToPy(val); currentUnit = 'py';
+      }
+    }));
+    // 검색버튼
+    document.getElementById('search').onclick = function() {
+      let cropType = cropGbn.value;
+      let crop = document.getElementById('crop_cd').value;
+      let area = parseFloat(areaInput.value || '');
+      if (!cropType || !crop || !area) { alert('모든 항목을 선택·입력하세요.'); return;}
+      // 더미 값 생성
+      let pre_n = rand(4,6), pre_p = rand(3.5,5.5), pre_k = rand(3.3,4.7);
+      let post_n = rand(2,3.2), post_p = rand(0,0.8), post_k = rand(1.2,2.0);
+      let pre_yoso = rand(0.8,1.6), pre_phos = rand(3.9,5.3), pre_kali = rand(0.3,0.8);
+      let post_yoso = rand(0.4,1.0), post_phos = rand(0,0.2), post_kali = rand(0.1,0.4);
+      let preRanks = dummyRanks('pre'), postRanks = dummyRanks('post');
+      // 처방 값
+      let preFert = {total:rand(2.5,4),total2:rand(0.1,0.8),total3:rand(0.2,0.6)};
+      let postFert = {total:rand(1.3,2.3),total2:rand(0.1,0.6),total3:rand(0.1,0.4)};
+      // 추천문구 생성
+      function makeRecommendText(fert, amt, pAdd, kAdd) {
+        let txt = `${fert.disp} ${amt}kg`, extra=[];
+        if(pAdd && Number(pAdd)>0) extra.push(`인산 ${pAdd}kg`);
+        if(kAdd && Number(kAdd)>0) extra.push(`칼리 ${kAdd}kg`);
+        if(extra.length) txt += ', ' + extra.join(', ');
+        txt += '을 주십시오.'; return txt;
+      }
+      // 결과 렌더링
+      document.getElementById('results').innerHTML = `
+      <div class="section-wrap">
+        <div class="section">
+          <div>
+            <h3>&#9654; 성분량(kg/10a)</h3>
+            <table>
+              <thead><tr><th></th><th>질소</th><th>인산</th><th>칼리</th></tr></thead>
+              <tbody>
+                <tr><th>밑거름</th><td>${pre_n}</td><td>${pre_p}</td><td>${pre_k}</td></tr>
+                <tr><th>웃거름</th><td>${post_n}</td><td>${post_p}</td><td>${post_k}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>&#9654; 추천량(kg/실면적)</h3>
+            <table>
+              <thead><tr><th></th><th>요소</th><th>용성인비</th><th>염화칼리</th></tr></thead>
+              <tbody>
+                <tr><th>밑거름</th><td>${pre_yoso}</td><td>${pre_phos}</td><td>${pre_kali}</td></tr>
+                <tr><th>웃거름</th><td>${post_yoso}</td><td>${post_phos}</td><td>${post_kali}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="recommend-box">
+        <h3>&#9654; 복합비료(시중유통비료) 추천 순위</h3>
+        <table>
+          <tr><th rowspan="3" style="width:110px;">추천 비료(%)</th><th></th><th>1순위</th><th>2순위</th><th>3순위</th></tr>
+          <tr><td>밑거름</td><td>${preRanks[0]}</td><td>${preRanks[1]}</td><td>${preRanks[2]}</td></tr>
+          <tr><td>웃거름</td><td>${postRanks[0]}</td><td>${postRanks[1]}</td><td>${postRanks[2]}</td></tr>
+        </table>
+        <div class="dummy-msg">※ 위 추천비료는 기준값에서 질소, 인산, 칼리 순으로 근접한 비료가 선정되었습니다.</div>
+      </div>
+      <div class="recommend-box">
+        <h3>&#9654; 복합비료 처방방식</h3>
+        <div class="radio-row">
+          <label><input type="radio" name="presc_mode" checked> 질소기준처방(기존방식)</label>
+          <label><input type="radio" name="presc_mode"> 인산기준처방</label>
+          <label><input type="radio" name="presc_mode"> 칼리기준처방</label>
+        </div>
+      </div>
+      <div class="fert-section2" id="pre_sec">
+        <h3>&#9654; 밑거름 복합비료 처방(kg/실면적)</h3>
+        <table class="fert-table">
+          <tr>
+            <td colspan="6" style="text-align:left;">
+              <label>비종선택
+                <select id="pre_fert_sel">
+                  ${PRE_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+                </select>
+              </label>
+              <label>사용자 직접 입력 <input type="checkbox" id="pre_user"></label>
+              <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>복합비료 종류(%)</td>
+            <td>질소: <input type="text" id="pre_n" value="${PRE_FERTS[0].N}" readonly></td>
+            <td>인산: <input type="text" id="pre_p" value="${PRE_FERTS[0].P}" readonly></td>
+            <td>칼리: <input type="text" id="pre_k" value="${PRE_FERTS[0].K}" readonly></td>
+            <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+          </tr>
+          <tr>
+            <td>복합비료 추천량</td>
+            <td colspan="4" style="text-align:left;"><input type="text" id="pre_amt" value="${preFert.total}"></td>
+          </tr>
+          <tr>
+            <td>인산 추가필요량</td>
+            <td colspan="2"><input type="text" id="pre_pAdd" value="${preFert.total2}"></td>
+            <td>칼리 추가필요량</td>
+            <td colspan="2"><input type="text" id="pre_kAdd" value="${preFert.total3}"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="fert-section2" id="post_sec">
+        <h3>&#9654; 웃거름 복합비료 처방(kg/실면적)</h3>
+        <table class="fert-table">
+          <tr>
+            <td colspan="6" style="text-align:left;">
+              <label>비종선택
+                <select id="post_fert_sel">
+                  ${POST_FERTS.map((f,i)=>`<option value="${i}">${f.disp}</option>`).join('')}
+                </select>
+              </label>
+              <label>사용자 직접 입력 <input type="checkbox" id="post_user"></label>
+              <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+            </td>
+          </tr>
+          <tr>
+            <td>복합비료 종류(%)</td>
+            <td>질소: <input type="text" id="post_n" value="${POST_FERTS[0].N}" readonly></td>
+            <td>인산: <input type="text" id="post_p" value="${POST_FERTS[0].P}" readonly></td>
+            <td>칼리: <input type="text" id="post_k" value="${POST_FERTS[0].K}" readonly></td>
+            <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+          </tr>
+          <tr>
+            <td>복합비료 추천량</td>
+            <td colspan="4" style="text-align:left;"><input type="text" id="post_amt" value="${postFert.total}"></td>
+          </tr>
+          <tr>
+            <td>인산 추가필요량</td>
+            <td colspan="2"><input type="text" id="post_pAdd" value="${postFert.total2}"></td>
+            <td>칼리 추가필요량</td>
+            <td colspan="2"><input type="text" id="post_kAdd" value="${postFert.total3}"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="recommend-box">
+        <h3>&#9654; 복합비료(시중유통비료) 추천량</h3>
+        <table>
+          <tr>
+            <th>밑거름 추천량</th>
+            <td id="rec_pre"></td>
+          </tr>
+          <tr>
+            <th>웃거름 추천량</th>
+            <td id="rec_post"></td>
+          </tr>
+        </table>
+      </div>
+      `;
+
+      // 추천문구 실시간 연동
+      setTimeout(function(){
+        const $ = sel => document.querySelector(sel), $$ = sel => document.querySelectorAll(sel);
+        function updateRecommendText(){
+          // 밑거름
+          let fIdx = $('#pre_user').checked ? null : Number($('#pre_fert_sel').value);
+          let fert = fIdx!==null ? PRE_FERTS[fIdx] : {
+            disp: `사용자정의 (${ $('#pre_n').value }-${ $('#pre_p').value }-${ $('#pre_k').value })`
+          };
+          let preText = makeRecommendText(fert, $('#pre_amt').value, $('#pre_pAdd').value, $('#pre_kAdd').value);
+          // 웃거름
+          let pfIdx = $('#post_user').checked ? null : Number($('#post_fert_sel').value);
+          let pfert = pfIdx!==null ? POST_FERTS[pfIdx] : {
+            disp: `사용자정의 (${ $('#post_n').value }-${ $('#post_p').value }-${ $('#post_k').value })`
+          };
+          let postText = makeRecommendText(pfert, $('#post_amt').value, $('#post_pAdd').value, $('#post_kAdd').value);
+          $('#rec_pre').textContent = preText;
+          $('#rec_post').textContent = postText;
+        }
+        // NPK 연동
+        $('#pre_user').addEventListener('change', function() {
+          let on = this.checked;
+          $('#pre_fert_sel').disabled = on;
+          $('#pre_n').readOnly = !on;
+          $('#pre_p').readOnly = !on;
+          $('#pre_k').readOnly = !on;
+          updateRecommendText();
+        });
+        $('#post_user').addEventListener('change', function() {
+          let on = this.checked;
+          $('#post_fert_sel').disabled = on;
+          $('#post_n').readOnly = !on;
+          $('#post_p').readOnly = !on;
+          $('#post_k').readOnly = !on;
+          updateRecommendText();
+        });
+        $('#pre_fert_sel').addEventListener('change', function() {
+          let f = PRE_FERTS[this.value];
+          $('#pre_n').value = f.N;
+          $('#pre_p').value = f.P;
+          $('#pre_k').value = f.K;
+          updateRecommendText();
+        });
+        $('#post_fert_sel').addEventListener('change', function() {
+          let f = POST_FERTS[this.value];
+          $('#post_n').value = f.N;
+          $('#post_p').value = f.P;
+          $('#post_k').value = f.K;
+          updateRecommendText();
+        });
+        ['#pre_amt','#pre_pAdd','#pre_kAdd','#pre_n','#pre_p','#pre_k','#pre_fert_sel','#pre_user',
+         '#post_amt','#post_pAdd','#post_kAdd','#post_n','#post_p','#post_k','#post_fert_sel','#post_user'
+        ].forEach(sel => {
+          $$(sel).forEach(e=>e.addEventListener('input', updateRecommendText));
+          $$(sel).forEach(e=>e.addEventListener('change', updateRecommendText));
+        });
+        updateRecommendText();
+      },30);
+    };
+    // 초기화
+    document.getElementById('reset').onclick = function(){
+      cropGbn.value = '';
+      document.getElementById('crop_cd').innerHTML = '<option value="">선택</option>';
+      areaInput.value = '';
+      document.getElementById('results').innerHTML = '';
+    };
+  });
+</script>
+</body>
+</html>
