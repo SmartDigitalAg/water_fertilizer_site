@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=1024,user-scalable=no">
   <style>
     body { background: #fff; font-family: 'Noto Sans KR', sans-serif; color: #222; margin:0; }
-    .container { max-width: 950px; margin: 0 auto; padding: 1.5em 2em; }
+    .container { max-width: 950px; margin: 0 auto; padding: 1.5em 2em;
+      border: 1px solid #e0e0e0;   /* 전체 테두리! */
+      border-radius: 0;}
     h1 { margin-bottom: .7em; font-size:2em;}
     nav { margin-bottom: 1em; }
     .nav-link { color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em; }
@@ -43,6 +45,13 @@
       .area-row { flex-direction: column; align-items: flex-start; gap: 0.2em; }
     }
     .dummy-msg { font-size: 0.93em; color: #cc6600; margin: .6em 0 .2em 0; }
+    .form-box {
+      background: #faf9f7;
+      border: 1px solid #e0e0e0;
+      padding: 1.2em 1.5em;
+      margin-bottom: 1.4em;
+      border-radius: 0;
+    }
   </style>
 </head>
 <body>
@@ -60,21 +69,24 @@
       </span>
     </nav>
     <h1>작물별 비료 표준사용량 처방</h1>
-    <div class="form-row">
-      <label class="area-label">작물 선택</label>
-      <select id="crop_gbn"><option value="">선택</option></select>
-      <select id="crop_cd"><option value="">선택</option></select>
+    <div class="form-box">
+      <div class="form-row">
+        <label class="area-label">작물 선택</label>
+        <select id="crop_gbn"><option value="">선택</option></select>
+        <select id="crop_cd"><option value="">선택</option></select>
+      </div>
+      <div class="form-row area-row">
+        <label class="area-label">대상지면적</label>
+        <input type="text" id="area" style="width:90px;" value="">
+        <label class="unit-radio"><input type="radio" name="area_gb" checked> 제곱미터(㎡)</label>
+        <label class="unit-radio"><input type="radio" name="area_gb"> 평</label>
+      </div>
+      <div class="form-row">
+        <button id="search" class="button">검색</button>
+        <button id="reset" class="button reset">초기화</button>
+      </div>
     </div>
-    <div class="form-row area-row">
-      <label class="area-label">대상지면적</label>
-      <input type="text" id="area" style="width:90px;" value="">
-      <label class="unit-radio"><input type="radio" name="area_gb" checked> 제곱미터(㎡)</label>
-      <label class="unit-radio"><input type="radio" name="area_gb"> 평</label>
-    </div>
-    <div class="form-row">
-      <button id="search" class="button">검색</button>
-      <button id="reset" class="button reset">초기화</button>
-    </div>
+
     <div id="results"></div>
   </div>
 <script>
