@@ -71,7 +71,13 @@
       margin-bottom: 1.4em;
       border-radius: 0;
     }
-
+    .compost-input {
+      width: 80px;        /* 원하는 크기로 조정 */
+      height: 38px;
+      font-size: 1em;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
@@ -194,10 +200,12 @@
         </tr>
         <tr>
           <td>복합비료 종류(%)</td>
-          <td>질소: <input type="text" id="pre_n" value="21" readonly></td>
-          <td>인산: <input type="text" id="pre_p" value="6" readonly></td>
-          <td>칼리: <input type="text" id="pre_k" value="8" readonly></td>
-          <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+          <td colspan="4" style="text-align:left; white-space:nowrap;">
+            질소: <input type="text" id="pre_n" value="21" readonly>
+            인산: <input type="text" id="pre_p" value="6" readonly>
+            칼리: <input type="text" id="pre_k" value="8" readonly>
+            비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg
+          </td>
         </tr>
         <tr>
           <td>복합비료 추천량</td>
@@ -229,10 +237,12 @@
         </tr>
         <tr>
           <td>복합비료 종류(%)</td>
-          <td>질소: <input type="text" id="post_n" value="18" readonly></td>
-          <td>인산: <input type="text" id="post_p" value="0" readonly></td>
-          <td>칼리: <input type="text" id="post_k" value="14" readonly></td>
-          <td>비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg</td>
+          <td colspan="4" style="text-align:left; white-space:nowrap;">
+            질소: <input type="text" id="post_n" value="18" readonly>
+            인산: <input type="text" id="post_p" value="0" readonly>
+            칼리: <input type="text" id="post_k" value="14" readonly>
+            비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg
+          </td>
         </tr>
         <tr>
           <td>복합비료 추천량</td>
@@ -246,14 +256,22 @@
         </tr>
       </table>
     </div>
-    <div class="subtitle"> &#9654; 혼합가축분퇴비 처방 (kg/실면적) <button class="btn" style="background:#aaa;color:#222;" onclick="toggleCompost();return false;">접기</button></div>
+    <div class="subtitle"> &#9654; 혼합가축분퇴비 처방 (kg/실면적)
+      <button class="btn" style="background:#aaa;color:#222;" onclick="toggleCompost();return false;">접기</button>
+    </div>
     <div id="compostSection">
-      <div class="form-inline">
-        <label>우분 : <input class="input-short" type="number" value="25">(%)</label>
-        <label>돈분 : <input class="input-short" type="number" value="14">(%)</label>
-        <label>계분 : <input class="input-short" type="number" value="26">(%)</label>
-        <label>톱밥 : <input class="input-short" type="number" value="21">(%)</label>
-      </div>
+      <table class="fert-table">
+        <tr>
+          <th style="width:140px;">가축분 혼합 비율</th>
+          <td>
+            우분: <input class="input-short compost-input" type="number" value="25"> (%) &nbsp;
+            돈분: <input class="input-short compost-input" type="number" value="14"> (%) &nbsp;
+            계분: <input class="compost-input" type="number" value="26"> (%) &nbsp;
+            톱밥: <input class="compost-input" type="number" value="21"> (%)
+          </td>
+        </tr>
+      </table>
+
       <div class="note" style="margin-bottom:1em;">
         ※ 퇴비에 가축분 혼합비율이 표기되어 있을 경우 입력하세요.<br>
         (미입력시 평균값 적용)<br>
