@@ -21,7 +21,8 @@
     .nav-menu:hover .dropdown-content { display: block; }
     .input-row { display: flex; align-items: center; margin-bottom: 0.7em; flex-wrap: wrap; }
     .input-row label { font-weight: bold; margin-right: 0.8em; }
-    .input-row select, .input-row input[type="text"] { margin-right: 0.7em; }
+    select, input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px;  font-size:1em; padding:0 10px;
+      min-width:110px; margin-right:0.8em; box-sizing:border-box; }
     .unit-radio { margin-left: 12px; font-size: 0.98em; }
     .chem-table { width: 100%; border-collapse: collapse; margin: 1.4em 0 2em 0; background: #fafafb; }
     .chem-table td, .chem-table th { border: 1px solid #e2e2e2; padding: 0.7em 0.9em; }
@@ -42,6 +43,7 @@
     .subtitle { font-weight: bold; margin: 1.2em 0 0.4em 0; font-size: 1.08em; }
     .btn { padding: 0.45em 1.5em; background: #6495ed; color: #fff; border: none; border-radius: 5px; cursor: pointer; margin: 1em 0;}
     .btn:hover { background: #3d78c2;}
+    .btn-search { background:#fff; color:#222; border:2px solid #222; padding:6px 22px; font-size:1em; height:38px; min-width:85px; cursor:pointer; }
     .note { font-size: 0.96em; color: #666; margin: 0.3em 0 1em 0;}
     .radio-list, .checkbox-list { margin: 0.6em 0; }
     .form-inline > * { margin-right: 1.2em; }
@@ -62,6 +64,14 @@
       .fert-section2 { padding: 0.8em 0.3em 0.6em 0.3em; }
       .fert-table th, .fert-table td { padding: 0.44em 0.4em; }
     }
+    .form-box {
+      background: #faf9f7;
+      border: 1px solid #e0e0e0;
+      padding: 1.2em 1.5em;
+      margin-bottom: 1.4em;
+      border-radius: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -84,30 +94,32 @@
     시군 농업기술센터에서 지번별로 토양시료를 채취 분석한 토양검정정보를 이용하였으므로 보다 정확한 비료사용처방을 받기 원하시면 관할 농업기술센터로 문의하시기 바랍니다.<br>
   </div>
   <form id="fertilizer-form" autocomplete="off">
-    <div class="input-row">
-      <label>경지구분</label>
-      <label><input type="radio" name="field_type" value="논" checked> 논</label>
-      <label><input type="radio" name="field_type" value="밭"> 밭</label>
-      <label><input type="radio" name="field_type" value="시설"> 시설</label>
-      <label><input type="radio" name="field_type" value="과수"> 과수</label>
-      <label><input type="radio" name="field_type" value="유기능(논)"> 유기능(논)</label>
-      <label><input type="radio" name="field_type" value="간척지(논)"> 간척지(논)</label>
-      <label><input type="radio" name="field_type" value="간척지(밭)"> 간척지(밭)</label>
-      <label><input type="radio" name="field_type" value="임야"> 임야</label>
-      <label><input type="radio" name="field_type" value="기타"> 기타</label>
-    </div>
-    <div class="input-row">
-      <label>작물</label>
-      <select><option>작물 유형 선택</option><option>곡류(벼)</option><option>서류</option></select>
-      <select><option>작물 선택</option><option>벼</option><option>고구마</option></select>
-      <button type="button" style="margin-right:8px;">작물명검색</button>
-    </div>
-    <div class="input-row">
-      <label>대상지면적</label>
-      <input type="text" id="area" style="width:90px;">
-      <label class="unit-radio"><input type="radio" name="area_gb" value="㎡" checked> 제곱미터(㎡)</label>
-      <label class="unit-radio"><input type="radio" name="area_gb" value="평"> 평</label>
-    </div>
+      <div class="form-box">
+        <div class="input-row">
+          <label>경지구분</label>
+          <label><input type="radio" name="field_type" value="논" checked> 논</label>
+          <label><input type="radio" name="field_type" value="밭"> 밭</label>
+          <label><input type="radio" name="field_type" value="시설"> 시설</label>
+          <label><input type="radio" name="field_type" value="과수"> 과수</label>
+          <label><input type="radio" name="field_type" value="유기능(논)"> 유기능(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(논)"> 간척지(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(밭)"> 간척지(밭)</label>
+          <label><input type="radio" name="field_type" value="임야"> 임야</label>
+          <label><input type="radio" name="field_type" value="기타"> 기타</label>
+        </div>
+        <div class="input-row">
+          <label>작물</label>
+          <select><option>작물 유형 선택</option><option>곡류(벼)</option><option>서류</option></select>
+          <select><option>작물 선택</option><option>벼</option><option>고구마</option></select>
+          <button type="button" class="btn-search" onclick="alert('작물명검색 더미입니다');">작물명검색</button>
+        </div>
+        <div class="input-row">
+          <label>대상지면적</label>
+          <input type="text" id="area" style="width:90px;">
+          <label class="unit-radio"><input type="radio" name="area_gb" value="㎡" checked> 제곱미터(㎡)</label>
+          <label class="unit-radio"><input type="radio" name="area_gb" value="평"> 평</label>
+        </div>
+      </div>
     <table class="chem-table">
       <tr><th><label class="chemlabel">(*) pH</label></th><td><input type="text" name="ph"></td>
           <th><label class="chemlabel">(*) 유기물</label></th><td><input type="text" name="om"> <span class="unit">g/kg</span></td></tr>
