@@ -129,12 +129,19 @@
        color: #252525; border-radius:7px; padding:13px 15px 11px 14px; font-size:0.98em; margin:0 22px 10px 22px;}
     .modal-postcode-tip strong { color:#3683d6; }
     .modal-postcode-result-list {
-      max-height: 260px;
+      max-height: 460px;
+      min-height: 460px;
       overflow-y: auto;
       margin: 0 24px 0 24px;
       padding: 0;
       border-top: 1px solid #efefef;
       font-size: 1.04em;
+    }
+    .modal-postcode-pagination {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .modal-postcode-result-list li {
       list-style: none;
@@ -192,16 +199,21 @@
       $('#modal-postcode-input').val('').focus();
       $('#modal-postcode-result-list').empty();
       addressSearchResults = [];
+      $('#modal-postcode-pagination').empty();
       addressSearchTotal = 0;
+      $('.modal-postcode').css({'min-height':'420px','height':'420px'});    // 모달 열릴 때 높이 무조건 420px로 초기화
+      $('.modal-postcode-result-list').css('max-height','260px');
     });
 
     // 모달 내 닫기(X), 바깥 클릭 시 닫기
     $('.modal-postcode-close, #modal-postcode-bg').on('click', function(e){
       if (e.target === this) $('#modal-postcode-bg').fadeOut(80);
+      $('#modal-postcode-pagination').empty();
     });
     // ESC 닫기
     $(document).on('keydown', function(e){
       if(e.key==='Escape') $('#modal-postcode-bg').fadeOut(80);
+      $('#modal-postcode-pagination').empty();
     });
 
     // -------- 주소검색: 한 번만 Ajax, 이후 JS 페이징 --------
@@ -261,7 +273,7 @@
       <div style="flex:0 0 58px; display:flex; justify-content:flex-start;">${nextBtn}</div>
     </div>
   `;
-  $('#modal-postcode-result-list').append(page_html);
+  $('#modal-postcode-pagination').html(page_html);
 }
 
       // ---- 페이지네이션 영역 고정 끝 ----
@@ -269,7 +281,7 @@
       setTimeout(function() {
         const modal = $('.modal-postcode');
         const resultList = $('.modal-postcode-result-list');
-        if (items.length <= 3) {
+        if (addressSearchTotal <= 3) {
           modal.css({'min-height':'420px','height':'420px'});
           resultList.css('max-height','260px');
         } else {
@@ -517,6 +529,7 @@
         </ul>
       </div>
       <ul id="modal-postcode-result-list" class="modal-postcode-result-list"></ul>
+      <div id="modal-postcode-pagination" class="modal-postcode-pagination"></div>
     </div>
   </div>
 </body>
