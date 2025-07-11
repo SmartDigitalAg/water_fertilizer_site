@@ -1,4 +1,5 @@
 {#모달 검색창에 x버튼 빼고 디테일 수정완료#}
+{#모달 검색창에 x버튼 빼고 디테일 수정완료#}
 <!DOCTYPE html>
 {% load static %}
 <html lang="ko">
@@ -209,7 +210,6 @@
     // 모달 내 닫기(X), 바깥 클릭 시 닫기
     $('.modal-postcode-close, #modal-postcode-bg').on('click', function(e){
       if (e.target === this) $('#modal-postcode-bg').fadeOut(80);
-      $('#modal-postcode-pagination').empty();
     });
     // ESC 닫기
     $(document).on('keydown', function(e){
