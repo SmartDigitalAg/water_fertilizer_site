@@ -379,7 +379,7 @@
       });
       $('#btn_search_pnu_crop').on('click', function(){
   let pnu = $('#jibun_sel').val();
-  let cropName = $('#sel_crop_name').val();
+  {#let cropName = $('#sel_crop_name').val();#}
   let cropCode = cropCodeMap[cropName] || "00001"; // 벼 기본코드
 
   if (!pnu) {
@@ -389,9 +389,6 @@
 
   requestPrescription(pnu, cropCode, "1");
 });
-
-
-      // 기타 기존 crop, API 검색, prescription ajax 기능 그대로 유지
     });
   </script>
 </body>

@@ -92,9 +92,9 @@
           <option value="">지번 선택</option>
         </select>
       </div>
-{#      <div class="form-row">#}
-{#        <button type="button" class="btn" id="btn_search_pnu_crop">API 검색</button>#}
-{#      </div>#}
+      <div class="form-row">
+        <button type="button" class="btn" id="btn_search_pnu_crop">API 검색</button>
+      </div>
     </div>
 
     {% if result_pnu_list %}
@@ -389,9 +389,6 @@
 
   requestPrescription(pnu, cropCode, "1");
 });
-
-
-      // 기타 기존 crop, API 검색, prescription ajax 기능 그대로 유지
     });
   </script>
 </body>
