@@ -25,6 +25,7 @@
     .btn-search:hover, .btn:hover { background:#f6f1ea; color:#000; }
     .btn { border:0; background:#6f462a; color:#fff; min-width:90px; }
     .btn:hover { background:#54341b; }
+    .btn-hidden { display: none; }
     @media (max-width:720px) {
       .container { padding:1em 0.3em; }
       .form-row { flex-direction:column; align-items:flex-start; gap:0.4em; }
@@ -34,6 +35,7 @@
     }
     .result-box { margin:26px 0 10px 0; background:#f9f4e8; border-radius:7px; padding:14px 22px; }
     .result-fail { background:#fde6e6 !important; color:#b64646;}
+    .result-success { background:#e6f7e6 !important; color:#2d5a2d;}
     .pnu-list { margin:12px 0 0 0; padding-left:18px; }
     .pnu-list li { margin-bottom:6px; }
     .pnu-code { color:#8b5b13; font-weight:bold; }
@@ -41,6 +43,10 @@
     .presc-table { margin: 24px 0; border-collapse: collapse; width: 100%; }
     .presc-table th, .presc-table td { border: 1px solid #ddd; padding: 9px 11px; text-align: center; }
     .presc-table th { background: #eee9db; }
+    .api-result { margin-top: 15px; padding: 15px; background: #f0f8ff; border: 1px solid #b0d4f1; border-radius: 5px; }
+    .api-result h4 { margin: 0 0 10px 0; color: #2563eb; }
+    .api-result p { margin: 5px 0; }
+    .api-result .code { font-family: 'Courier New', monospace; font-weight: bold; color: #dc2626; }
   </style>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
@@ -94,6 +100,7 @@
       </div>
       <div class="form-row">
         <button type="button" class="btn" id="btn_search_pnu_crop">API 검색</button>
+        <button type="button" class="btn-search btn-hidden" id="btn_show_presc">처방결과 보기</button>
       </div>
     </div>
 
@@ -108,7 +115,6 @@
             <li>
               <span class="pnu-addr">{{ item.address }}</span><br>
               <span class="pnu-code">PNU:</span> {{ item.pnu }}
-{#              <button type="button" class="btn-search btn-show-presc" data-pnu="{{ item.pnu }}">처방결과 보기</button>#}
             </li>
           {% endfor %}
         </ul>
@@ -119,14 +125,16 @@
       </div>
     {% endif %}
 
+    <div id="api_result_area"></div>
     <div id="prescription_result_area"></div>
   </div>
 
   <script>
+    // 전역 변수로 API 검색 결과 저장
+    let apiSearchResult = null;
+
     $(function(){
       // 기존 select 초기화 코드 전체 (생략 없이 그대로 유지)
-      $(function(){
-      // 지역/작물/지번 map 선언
       const sidoList = [
         {code: "52", name: "전북특별자치도"}, {code: "41", name: "경기도"},
         {code: "48", name: "경상남도"}, {code: "50", name: "제주특별자치도"}
@@ -184,6 +192,7 @@
         if(!sido) return;
         for(const s of (sggMap[sido] || [])) $('#sel_sgg').append(new Option(s.name, s.code));
       });
+
       $('#sel_sgg').on('change', function(){
         let sido = $('#sel_sido').val(), sgg = this.value;
         $('#sel_umd').empty().append('<option value="">읍/면/동</option>');
@@ -193,6 +202,7 @@
         let list = umdMap[`${sido}-${sgg}`] || [];
         for(const u of list) $('#sel_umd').append(new Option(u, u));
       });
+
       $('#sel_umd').on('change', function(){
         let sido = $('#sel_sido').val(), sgg = $('#sel_sgg').val(), umd = this.value;
         $('#sel_ri').empty().append('<option value="">리</option>');
@@ -201,8 +211,8 @@
         let list = riMap[`${sido}-${sgg}-${umd}`] || [];
         if(list.length > 0) { for(const r of list) $('#sel_ri').append(new Option(r, r)); }
       });
+
       $('#sel_ri').on('change', function(){
-        // 읍면동, 리까지 선택된 상태에서 parcelMap에 지번 연결
         let sido = $('#sel_sido').val(),
             sgg  = $('#sel_sgg').val(),
             umd  = $('#sel_umd').val(),
@@ -219,16 +229,12 @@
         let list = cropMap[this.value] || [];
         $('#sel_crop_name').empty().append('<option value="">작물 선택</option>');
         for(const c of list) $('#sel_crop_name').append(new Option(c, c));
-
-        // 품질선택 드롭다운 초기화 및 숨김
         $('#sel_quality').hide().empty().append('<option value="">품질 선택</option>');
       });
 
       // 작물명 변경 이벤트 추가
       $('#sel_crop_name').on('change', function(){
         let cropName = this.value;
-
-        // 벼(일반답) 선택 시에만 품질선택 드롭다운 표시
         if(cropName === "벼(일반답)") {
           $('#sel_quality').empty().append('<option value="">품질 선택</option>');
           let qualityList = qualityMap[cropName] || [];
@@ -241,7 +247,7 @@
         }
       });
 
-      // 주소검색 → form 전송 (지번선택시 본번/부번 포함해서 넘김, mountain 추가)
+      // 주소검색 버튼 클릭 이벤트 (기존 그대로 유지)
       $('#btn_addr_search').on('click', function(){
         let sido = $('#sel_sido option:selected').text();
         let sigungu = $('#sel_sgg option:selected').text();
@@ -251,7 +257,7 @@
         let ri = (!riVal || riText === "리") ? '' : riText;
         let jibun = $('#jibun_sel').val();
 
-        // 본번/부번 파싱: "[논] 31-1" → bonbun:31, bubun:1
+        // 본번/부번 파싱
         let bonbun = "", bubun = "";
         if (jibun) {
           let match = jibun.match(/(\d+)(?:-(\d+))?/);
@@ -261,16 +267,14 @@
           }
         }
 
-        // 필지구분(일반=1, 산=2)으로 변경
         let mountain = $('#mountain').val();
-        // mountain = $('#mountain').val(); // 그대로 0/1로 쓰려면 이 라인만 사용
-
 
         if (!sido || sido === '광역시/도' || !sigungu || sigungu === '시/군/구' || !eupmyeon || eupmyeon === '읍/면/동') {
           alert('광역시/도, 시/군/구, 읍/면/동을 모두 선택하세요.');
           return;
         }
-        // form 전송 (mountain, bonbun, bubun 포함)
+
+        // form 전송
         let form = $('<form>', {method: "post", action: ""})
         .append('{% csrf_token %}')
         .append($('<input>', {type:'hidden', name:'sido', value:sido}))
@@ -282,7 +286,149 @@
         .append($('<input>', {type:'hidden', name:'bubun', value:bubun}));
         form.appendTo('body').submit();
       });
+
+      // API 검색 버튼 클릭 이벤트
+      $('#btn_search_pnu_crop').on('click', function() {
+        let sido = $('#sel_sido option:selected').text();
+        let sigungu = $('#sel_sgg option:selected').text();
+        let eupmyeon = $('#sel_umd option:selected').text();
+        let riVal = $('#sel_ri').val();
+        let riText = $('#sel_ri option:selected').text();
+        let ri = (!riVal || riText === "리") ? '' : riText;
+        let jibun = $('#jibun_sel').val();
+
+        let bonbun = "", bubun = "";
+        if (jibun) {
+          let match = jibun.match(/(\d+)(?:-(\d+))?/);
+          if (match) {
+            bonbun = match[1];
+            bubun = match[2] || "";
+          }
+        }
+
+        let mountain = $('#mountain').val();
+        let cropName = $('#sel_crop_name').val();
+        let riceQuality = $('#sel_quality').val();
+
+        if (!sido || sido === '광역시/도' || !sigungu || sigungu === '시/군/구' || !eupmyeon || eupmyeon === '읍/면/동') {
+          alert('광역시/도, 시/군/구, 읍/면/동을 모두 선택하세요.');
+          return;
+        }
+
+        if (!cropName) {
+          alert('작물을 선택해주세요.');
+          return;
+        }
+
+        if (cropName === "벼(일반답)" && !riceQuality) {
+          alert('벼(일반답) 선택 시 품질을 선택해주세요.');
+          return;
+        }
+
+        $.ajax({
+          type: "POST",
+          url: "",
+          data: {
+            'api_search': 1,
+            'sido': sido,
+            'sigungu': sigungu,
+            'eupmyeon': eupmyeon,
+            'ri': ri,
+            'bonbun': bonbun,
+            'bubun': bubun,
+            'mountain': mountain,
+            'crop_name': cropName,
+            'rice_quality': riceQuality,
+            'csrfmiddlewaretoken': $('#csrf_token').val()
+          },
+          dataType: 'json',
+          success: function(data) {
+            if (data.result === "success") {
+              apiSearchResult = data;
+
+              let html = `
+                <div class="result-box result-success">
+                  <h4>API 검색 결과</h4>
+                  <div class="api-result">
+                    <p><strong>인증키:</strong> <span class="code">${data.service_key}</span></p>
+                    <p><strong>PNU 코드:</strong> <span class="code">${data.pnu_code}</span></p>
+                    <p><strong>작물 코드:</strong> <span class="code">${data.crop_code}</span> (${data.crop_name})</p>
+                    ${data.rice_qlt_code ? `<p><strong>쌀품질 코드:</strong> <span class="code">${data.rice_qlt_code}</span> (${data.rice_quality})</p>` : ''}
+                    <p><strong>입력 주소:</strong> ${data.address}</p>
+                    <p><strong>PNU 주소:</strong> ${data.pnu_address}</p>
+                  </div>
+                </div>
+              `;
+              $("#api_result_area").html(html);
+              $('#btn_show_presc').removeClass('btn-hidden');
+            } else {
+              $("#api_result_area").html(`<div class="result-box result-fail"><b>오류:</b> ${data.message}</div>`);
+              $('#btn_show_presc').addClass('btn-hidden');
+            }
+          },
+          error: function() {
+            $("#api_result_area").html("<div class='result-box result-fail'><b>API 요청에 실패했습니다.</b></div>");
+            $('#btn_show_presc').addClass('btn-hidden');
+          }
+        });
+      });
+
+      // 처방결과 보기 버튼 클릭 이벤트
+      $('#btn_show_presc').on('click', function() {
+        if (!apiSearchResult) {
+          alert('먼저 API 검색을 실행해주세요.');
+          return;
+        }
+
+        let data = apiSearchResult;
+
+        $.ajax({
+          type: "POST",
+          url: "",
+          data: {
+            'request_prescription': 1,
+            'PNU_Code': data.pnu_code,
+            'crop_Code': data.crop_code,
+            'rice_Qlt_Code': data.rice_qlt_code || '1',
+            'csrfmiddlewaretoken': $('#csrf_token').val()
+          },
+          dataType: 'json',
+          success: function(prescData) {
+            if (prescData.result === "success") {
+              let html = `
+                <div class="result-box result-success">
+                  <h3>비료사용 처방결과</h3>
+                  <table class="presc-table">
+                    <tr>
+                      <th>항목</th>
+                      <th>처방량</th>
+                      <th>단위</th>
+                    </tr>
+                    <tr><td>밑거름 질소</td><td>${prescData.pre_Fert_N || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>밑거름 인산</td><td>${prescData.pre_Fert_P || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>밑거름 칼리</td><td>${prescData.pre_Fert_K || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>웃거름 질소</td><td>${prescData.post_Fert_N || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>웃거름 인산</td><td>${prescData.post_Fert_P || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>웃거름 칼리</td><td>${prescData.post_Fert_K || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>우분퇴비</td><td>${prescData.pre_Compost_Cattl || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>돈분퇴비</td><td>${prescData.pre_Compost_Pig || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>계분퇴비</td><td>${prescData.pre_Compost_Chick || '-'}</td><td>kg/10a</td></tr>
+                    <tr><td>혼합퇴비</td><td>${prescData.pre_Compost_Mix || '-'}</td><td>kg/10a</td></tr>
+                  </table>
+                </div>
+              `;
+              $("#prescription_result_area").html(html);
+            } else {
+              $("#prescription_result_area").html(`<div class="result-box result-fail"><b>오류:</b> ${prescData.message || '비료사용처방 API 결과를 불러올 수 없습니다.'}</div>`);
+            }
+          },
+          error: function() {
+            $("#prescription_result_area").html("<div class='result-box result-fail'><b>비료사용처방 API 요청에 실패했습니다.</b></div>");
+          }
+        });
+      });
     });
+
     const cropCodeMap = {
       "벼(일반답)": "00001",
       "토마토(노지)": "04016",
@@ -290,25 +436,20 @@
       "배(1-4년생)": "09042",
       "장미": "11005",
       "국화": "11004",
-      // 필요하면 추가로 다른 작물도 여기서 관리
     };
 
-    // ▼▼ 처방결과 AJAX 요청 (PNU 코드 선택 후) ▼▼
+    // 기존 처방결과 AJAX 요청 함수 (호환성 유지)
     function requestPrescription(pnu, cropCode="00001", riceQltCode="1") {
-      // 품질선택 값 가져오기
       let qualitySelected = $('#sel_quality').val();
-      let qualityCode = "1"; // 기본값
+      let qualityCode = "1";
 
-      // 품질에 따른 코드 매핑
       if(qualitySelected === "고품질쌀(9kg)") qualityCode = "1";
       else if(qualitySelected === "최고쌀(7kg)") qualityCode = "2";
       else if(qualitySelected === "보통쌀(11kg)") qualityCode = "3";
 
-      // cropCode, riceQltCode는 기본값: 벼(논), 고품질쌀(9kg)
-      // 추가로 혼합비율 등 파라미터를 더 받을 수 있음
       $.ajax({
         type: "POST",
-        url: "",  // 자기 페이지에 post로 보냄 (Django view에서 구분)
+        url: "",
         data: {
           'request_prescription': 1,
           'PNU_Code': pnu,
@@ -319,7 +460,6 @@
         dataType: 'json',
         success: function(data){
           if (data.result === "success") {
-            // 결과를 테이블로 표출
             let html = `
               <h3>비료사용 처방결과</h3>
               <table class="presc-table">
@@ -350,46 +490,6 @@
         }
       });
     }
-    // ▼▼ PNU 코드 리스트에서 [처방결과 보기] 버튼 클릭 이벤트 ▼▼
-      $(document).on('click', '.btn-show-presc', function(){
-        let pnu = $(this).data("pnu");
-        let cropName = $('#sel_crop_name').val();
-        let cropCode = cropCodeMap[cropName] || "00001"; // '단호박'이면 00405, 아니면 00001(벼)
-        requestPrescription(pnu, cropCode, "1");
-      });
-
-      // 주소검색 버튼 클릭 시 POST form 제출
-      $('#btn_addr_search').on('click', function(){
-        let form = $('<form>', {
-          method: 'POST',
-          action: ''
-        });
-        // csrf token
-        form.append(`<input type="hidden" name="csrfmiddlewaretoken" value="${$('#csrf_token').val()}">`);
-        // 선택값 hidden input으로 추가
-        form.append(`<input type="hidden" name="sido" value="${$('#sel_sido').val()}">`);
-        form.append(`<input type="hidden" name="sigungu" value="${$('#sel_sgg').val()}">`);
-        form.append(`<input type="hidden" name="eupmyeon" value="${$('#sel_umd').val()}">`);
-        form.append(`<input type="hidden" name="ri" value="${$('#sel_ri').val()}">`);
-        form.append(`<input type="hidden" name="bonbun" value="${$('#bonbun').val()}">`);
-        form.append(`<input type="hidden" name="bubun" value="${$('#bubun').val()}">`);
-        form.append(`<input type="hidden" name="mountain" value="${$('#mountain').val()}">`);
-        $('body').append(form);
-        form.submit();
-      });
-      $('#btn_search_pnu_crop').on('click', function(){
-  let pnu = $('#jibun_sel').val();
-  {#let cropName = $('#sel_crop_name').val();#}
-  let cropCode = cropCodeMap[cropName] || "00001"; // 벼 기본코드
-
-  if (!pnu) {
-    alert("지번을 선택해주세요.");
-    return;
-  }
-
-  requestPrescription(pnu, cropCode, "1");
-});
-    });
   </script>
 </body>
 </html>
