@@ -19,7 +19,7 @@ def get_pnu_list_from_api(address):
             items = result.get('response', {}).get('result', {}).get('items', [])
             for item in items:
                 result_list.append({
-                    'address': item.get('address', ''),
+                    'address': get_address_str(item.get('address', '')),  # 문자열로 변환된 주소
                     'pnu': item.get('id', ''),
                 })
         except Exception:
