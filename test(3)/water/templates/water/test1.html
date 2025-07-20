@@ -1,0 +1,542 @@
+  <style>
+
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-12px);} to { opacity: 1; transform: translateY(0);} }
+
+    .button { padding: 0.4em 1em; border: none; background: #6c615e; color: #fff; cursor: pointer; }
+    .button.default { background: #ccc; color: #333; }
+    .info { color: red; margin-top: 0.5em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #aaa; padding: 0.5em; text-align: center; }
+    #report { margin-top: 2em; }
+    .result-address { font-weight: bold; margin: 1em 0 0.4em 2px; color: #222; font-size: 1.05em; }
+    @media (max-width: 600px) {
+      nav { font-size: 0.98em; }
+      .dropdown-content { min-width: 145px; }
+    }
+    .latlon-inline {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 18px;
+      color: #232;
+      font-size: 0.98em;
+    }
+    /* 주소입력칸+지우기버튼 absolute */
+    .address-input-wrapper {
+      position: relative;
+      display: inline-block;
+      max-width: 400px;
+      width: 100%;
+      vertical-align: middle;
+    }
+    .address-input-wrapper input[type="text"] {
+      width: 100%;
+      min-width: 0;
+      height: 38px;
+      font-size: 1em;
+      border: 1px solid #bcb69e;
+      padding: 0 34px 0 10px; /* 오른쪽 X버튼 공간 확보 */
+      box-sizing: border-box;
+    }
+    .address-clear-btn {
+      position: absolute;
+      top: 50%;
+      right: 7px;
+      transform: translateY(-50%);
+      width: 22px; height: 22px;
+      font-size: 1.2em;
+      color: #b3b3b3;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.14s;
+      background: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .address-clear-btn:hover { color: #393939; }
+    #address-search-btn {
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+    /* -------------------- 주소 모달(쿠팡 스타일) -------------------- */
+    .modal-bg { position: fixed; z-index: 5000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(36,36,36,0.22); display:none; }
+    .modal-postcode {
+      background: #fff; border-radius: 8px;
+      width: 500px; max-width: 95vw; margin: 140px auto 0 auto;
+      box-shadow: 0 8px 34px 0 rgba(50,50,60,0.18);
+      position: relative; padding-bottom:18px;
+      animation: modal-pop 0.17s; min-height:420px;
+    }
+    @keyframes modal-pop { from{ opacity:0; transform: translateY(-40px);} to{ opacity:1; transform:translateY(0); } }
+    .modal-postcode-header {
+      font-size: 1.15em; font-weight: 600; text-align:center; padding: 18px 20px 11px 20px; border-bottom: 1px solid #ececec;
+      position: relative;
+    }
+    .modal-postcode-close {
+      position: absolute; right: 19px; top: 16px; font-size: 1.7em; color: #888; cursor: pointer;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      font-weight: 400;
+    }
+    .modal-postcode-searchbox {
+      display: flex; align-items: center;
+      margin: 24px 24px 0 24px; padding: 0;
+      gap: 0;
+    }
+    .modal-postcode-searchbox input[type="text"] {
+      flex: 1 1 0; height:44px;
+      border: 2px solid #3683d6;
+      border-radius: 7px 7px 7px 7px;
+      font-size: 1.07em;
+      padding: 0 16px;
+      box-sizing: border-box;
+      outline: none;
+      background: #fff;
+      color: #263a61;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      transition: border 0.2s;
+      min-width: 0;
+    }
+    .modal-postcode-searchbox input[type="text"]:focus {
+      border-color: #2372c7;
+    }
+    .modal-postcode-search-btn {
+      width: 44px; height:44px; min-width:44px;
+      border:none; outline:none; padding:0;
+      border-radius: 7px 7px 7px 7px;
+      background: #3683d6;
+      display: flex; align-items: center; justify-content: center;
+      cursor:pointer;
+      box-shadow:0 1px 4px 0 rgba(60,120,200,0.09);
+      transition: background 0.16s;
+      border: 2px solid #3683d6;
+      border-left: none;
+      margin-left: 0;
+    }
+    .modal-postcode-search-btn:hover {
+      background: #2462a8;
+    }
+    .icon {
+      display: inline-block;
+      background-image: url("{% static 'images/icon.png' %}");
+      background-repeat: no-repeat;
+      vertical-align: middle;
+    }
+    .icon1 { width: 18px; height: 17px; background-position: 0px 0px; filter: invert(1) brightness(9); }
+    .modal-postcode-tip {
+      color: #252525; border-radius:7px; padding:13px 15px 11px 14px; font-size:0.98em; margin:0 22px 10px 22px;}
+    .modal-postcode-tip strong { color:#3683d6; }
+    .modal-postcode-result-list {
+      max-height: 460px;
+      min-height: 460px;
+      overflow-y: auto;
+      margin: 0 24px 0 24px;
+      padding: 0;
+      border-top: 1px solid #efefef;
+      font-size: 1.04em;
+    }
+    .modal-postcode-pagination {
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-postcode-result-list li {
+      list-style: none;
+      padding: 11px 8px 10px 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.13s;
+      color: #293868;
+    }
+    .modal-postcode-result-list li:hover { background: #e7f2fc; }
+    .modal-postcode-result-list .no-result {
+      color: #bb3939;
+      text-align: center;
+      background: #f8f8f8;
+      font-weight: 500;
+    }
+    .modal-postcode-result-list .too-many-result {
+      color: #d89d2b;
+      background: #fff6e0;
+      text-align: center;
+      font-weight: 600;
+    }
+    .modal-page-btn {
+      background: #f3f3f3;
+      border: 1px solid #bcb69e;
+      border-radius: 5px;
+      padding: 2px 13px;
+      font-size: 0.97em;
+      margin: 0 4px;
+      cursor: pointer;
+      color: #222;
+    }
+    .modal-page-btn:hover {
+      background: #e5eefb;
+      color: #123288;
+    }
+    @media (max-width:540px){
+      .modal-postcode { width:99vw; margin-top:24vw;}
+      .modal-postcode-searchbox {margin:7vw 7vw 0 7vw;}
+      .modal-postcode-tip {margin:0 7vw 10px 7vw;}
+      .modal-postcode-result-list {margin:0 7vw;}
+    }
+    .modal-postcode-clear-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px; min-width: 28px;
+      font-size: 1.5em;
+      color: #b3b3b3;
+      cursor: pointer;
+      margin-left: -40px;
+      margin-right: 6px;
+      user-select: none;
+      transition: color 0.14s;
+      margin-top: -3px;
+    }
+    .modal-postcode-clear-btn:hover { color: #393939; }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+  $(function(){
+    // ----------- 모달 주소검색(쿠팡 스타일, 메시방식) -----------
+    let addressSearchResults = [];
+    let addressSearchTotal = 0;
+
+    $('#address-search-btn').on('click', function(){
+      $('#modal-postcode-bg').fadeIn(100);
+      $('#modal-postcode-input').val('').focus();
+      $('#modal-postcode-result-list').empty();
+      addressSearchResults = [];
+      $('#modal-postcode-pagination').empty();
+      addressSearchTotal = 0;
+      $('.modal-postcode').css({'min-height':'420px','height':'420px'});
+      $('.modal-postcode-result-list').css('max-height','260px');
+    });
+
+    // 모달 내 닫기(X), 바깥 클릭 시 닫기
+    $('.modal-postcode-close, #modal-postcode-bg').on('click', function(e){
+      if (e.target === this) $('#modal-postcode-bg').fadeOut(80);
+    });
+    // ESC 닫기
+    $(document).on('keydown', function(e){
+      if(e.key==='Escape') $('#modal-postcode-bg').fadeOut(80);
+      $('#modal-postcode-pagination').empty();
+    });
+
+    // -------- 주소검색: 한 번만 Ajax, 이후 JS 페이징 --------
+    function doAddressSearch(){
+      const val = $('#modal-postcode-input').val().trim();
+      if (!val) { $('#modal-postcode-input').focus(); return; }
+      $('#modal-postcode-result-list').html('<li class="no-result">검색 중...</li>');
+      $.ajax({
+        url: "{% url 'water:get_latlon' %}",
+        data: { q: val, page: 1, per_page: 2000, list: 1 },
+        dataType: "json",
+        success: function(res){
+          addressSearchResults = res.items || [];
+          addressSearchTotal = res.total || addressSearchResults.length;
+          renderAddressList(1);
+        },
+        error: function(){
+          $('#modal-postcode-result-list').html('<li class="no-result">검색 중 오류가 발생했습니다.</li>');
+        }
+      });
+    }
+
+    // 10개씩 화면에 렌더링(페이지네이션)
+    function renderAddressList(page){
+      let html = '';
+      let start = (page-1) * 10;
+      let end = start + 10;
+      let items = addressSearchResults.slice(start, end);
+
+      if (addressSearchTotal >= 1000) {
+        html = '<li class="too-many-result">검색결과가 너무 많습니다.<br>찾으시려는 도로명주소의 건물번호 또는 건물명까지 상세히 입력 후 검색해 주세요.</li>';
+      } else if (items.length === 0) {
+        html = '<li class="no-result">검색 결과가 없습니다.</li>';
+      } else {
+        items.sort((a, b) => a.address.localeCompare(b.address, 'ko'));
+        items.forEach(addr => {
+          html += `<li data-address="${addr.address.replace(/"/g,'&quot;')}">${addr.address}</li>`;
+        });
+      }
+      $('#modal-postcode-result-list').html(html);
+
+      // ---- 페이지네이션 영역 flex로 항상 고정 ----
+      if (addressSearchTotal > 10) {
+        const maxPage = Math.ceil(addressSearchTotal / 10);
+
+        let prevBtn = (page > 1)
+          ? `<button class="modal-page-btn" data-page="${page-1}" style="width:58px;">이전</button>`
+          : `<button class="modal-page-btn" style="width:58px; visibility:hidden;">이전</button>`;
+        let nextBtn = (page < maxPage)
+          ? `<button class="modal-page-btn" data-page="${page+1}" style="width:58px;">다음</button>`
+          : `<button class="modal-page-btn" style="width:58px; visibility:hidden;">다음</button>`;
+
+        let page_html = `
+          <div style="display:flex; align-items:center; justify-content:center; gap:5px; padding:7px 0;">
+            <div style="flex:0 0 58px; display:flex; justify-content:flex-end;">${prevBtn}</div>
+            <div style="flex:0 0 56px; text-align:center; font-size:0.98em;">${page}/${maxPage}</div>
+            <div style="flex:0 0 58px; display:flex; justify-content:flex-start;">${nextBtn}</div>
+          </div>
+        `;
+        $('#modal-postcode-pagination').html(page_html);
+      }
+
+      setTimeout(function() {
+        const modal = $('.modal-postcode');
+        const resultList = $('.modal-postcode-result-list');
+        if (addressSearchTotal <= 3) {
+          modal.css({'min-height':'420px','height':'420px'});
+          resultList.css('max-height','260px');
+        } else {
+          modal.css({'min-height':'720px','height':'770px'});
+          resultList.css('max-height','560px');
+        }
+      }, 10);
+    }
+
+    // 검색버튼/엔터에만 Ajax
+    $('.modal-postcode-search-btn').on('click', function(e){
+      e.preventDefault();
+      doAddressSearch();
+    });
+    $('#modal-postcode-input').on('keypress', function(e){
+      if(e.which === 13){
+        doAddressSearch();
+        return false;
+      }
+    });
+    // 페이지네이션 버튼 클릭(서버 재요청 없이, JS만)
+    $(document).on('click', '.modal-page-btn', function(){
+      let p = parseInt($(this).data('page'));
+      if (p > 0) renderAddressList(p);
+    });
+
+    // 주소 결과 클릭 시 지역 선택 input에 반영
+    $(document).on('click', '#modal-postcode-result-list li[data-address]', function(){
+      const address = $(this).data('address');
+      $('#address-input').val(address);
+      $('#modal-postcode-bg').fadeOut(80);
+      $('#address-input').focus();
+    });
+    $('.modal-postcode-clear-btn').on('click', function(){
+      $('#modal-postcode-input').val('').focus();
+    });
+    $('.address-clear-btn').on('click', function(){
+      $('#address-input').val('').focus();
+    });
+
+    // -------- 이하 기존 기능들 그대로 --------
+    const cropMap = {
+      '01':['옥수수','콩','보리'],
+      '02':['땅콩','참깨'],
+      '03':['감자','고구마']
+    };
+    const stageInfoMap = {
+      '유묘기':         { period:'10/10~10/31', waterTon:5.25, dailyTon:0.19 },
+      '분얼기':         { period:'11/01~12/10', waterTon:5.77, dailyTon:0.14 },
+      '생육재생기':     { period:'02/10~02/28', waterTon:6.26, dailyTon:0.21 },
+      '분얼 및 신장기': { period:'03/01~04/20', waterTon:22.17, dailyTon:0.43 },
+      '출수 및 등숙기': { period:'04/21~05/10', waterTon:10.95, dailyTon:0.55 }
+    };
+
+    $('#crop_gbn').on('change', function(){
+      const arr = cropMap[$(this).val()] || [];
+      $('#crop').html('<option value="">작물</option>')
+        .append(arr.map(n => `<option>${n}</option>`));
+    });
+
+    $('#exam_day').on('change', function(){
+      const d = $(this).val() || '―';
+      $('#recommended').text('권장 파종·정식시기: ' + d);
+    });
+
+    $('#search').on('click', function(){
+      const D = id => $(`#${id} option:selected`).text() || $(`#${id}`).val() || '-';
+      let inputAddr = $('#address-input').val().trim();
+
+      if (!inputAddr) {
+        alert('주소를 입력하세요.');
+        return;
+      }
+      $.ajax({
+        url: "{% url 'water:get_latlon' %}",
+        data: { q: inputAddr },
+        dataType: "json",
+        success: function(res){
+          let parcel_addr = res.parcel_addr || "-";
+          let road_addr = res.road_addr || "-";
+          let addrObj = {
+            parcel_addr: parcel_addr,
+            road_addr: road_addr
+          };
+          $('#address-confirmed').val(JSON.stringify(addrObj));
+          $('#result').html(
+            `<div class="result-address">
+              <div>지번주소: ${parcel_addr}</div>
+              <div>도로명주소: ${road_addr}</div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>작물</th>
+                  <th>파종·정식시기</th>
+                  <th>기상정보</th>
+                  <th>관수방법</th>
+                  <th>관수면적(㎡)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${D('crop')}</td>
+                  <td>${$('#exam_day').val() || '-'}</td>
+                  <td>${D('weather')}</td>
+                  <td>${D('irrigation')}</td>
+                  <td>${$('#area').val() || '-'}</td>
+                </tr>
+              </tbody>
+            </table>`
+          );
+          let totalW = 0, totalD = 0, rows = '';
+          $.each(stageInfoMap, (s, v) => {
+            totalW += v.waterTon; totalD += v.dailyTon;
+            rows += `<tr>
+              <td>${s}</td>
+              <td>${v.period}</td>
+              <td>${v.waterTon.toFixed(2)}</td>
+              <td>${v.dailyTon.toFixed(2)}</td>
+            </tr>`;
+          });
+          rows += `<tr>
+            <td>계</td><td></td>
+            <td>${totalW.toFixed(2)}</td>
+            <td>${totalD.toFixed(2)}</td>
+          </tr>`;
+          $('#report').html(
+            `<table>
+              <thead>
+                <tr>
+                  <th>생육단계</th>
+                  <th>생육기간<br>(월/일)</th>
+                  <th>물 필요량<br>(톤/100m²)</th>
+                  <th>일별 물 필요량<br>(톤/day)</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>`
+          );
+        },
+        error: function(xhr){
+          $('#result').html('<div class="result-address" style="color:red;">주소 정보 조회에 실패했습니다.</div>');
+          $('#report').empty();
+        }
+      });
+    });
+
+    $('#reset').on('click', function(){
+      $('#address-input, #lat, #lon, #address-confirmed').val('');
+      $('#crop_gbn, #crop, #exam_day, #weather, #irrigation, #area').val('');
+      $('#recommended').text('권장 파종·정식시기: ―');
+      $('#result, #report').empty();
+    });
+  });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>노지 밭 물사용 처방</h1>
+    <form id="water-form" onsubmit="return false;">
+      <div class="form-box">
+        <div class="form-row search-address-row">
+          <label>· 지역</label>
+          <div class="address-input-wrapper">
+            <input type="text" id="address-input" placeholder="지번·도로명·건물명 입력" />
+            <span class="address-clear-btn" title="입력 지우기">&times;</span>
+          </div>
+          <button type="button" class="button default" id="address-search-btn">주소검색</button>
+          <input type="hidden" id="lat"><!-- 위도 -->
+          <input type="hidden" id="lon"><!-- 경도 -->
+          <input type="hidden" id="address-confirmed" />
+        </div>
+        <div class="form-row">
+          <label>· 작물</label>
+          <select id="crop_gbn">
+            <option value="">작물분류</option>
+            <option value="01">곡류</option>
+            <option value="02">유지작물</option>
+            <option value="03">서류</option>
+          </select>
+          <select id="crop"><option value="">작물</option></select>
+        </div>
+        <div class="form-row">
+          <label>· 파종·정식시기</label>
+          <input type="date" id="exam_day" />
+          <span id="recommended">권장 파종·정식시기: ―</span>
+        </div>
+        <div class="form-row">
+          <label>· 기상정보</label>
+          <select id="weather">
+            <option value="">평년선택</option>
+            <option>최근3년</option>
+            <option>최근10년</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>· 관수방법</label>
+          <select id="irrigation">
+            <option value="">관수방법</option>
+            <option>점적관수</option>
+            <option>스프링클러</option>
+            <option>분수호스</option>
+            <option>고랑관수</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>· 노지밭면적(m²)</label>
+          <input type="text" id="area" style="width:80px;" />
+        </div>
+        <div class="info">* 기상정보 데이터 산정에 따라 조회내용표출이 다소 지연될 수 있습니다.</div>
+        <div class="form-row">
+          <button type="button" id="search" class="button">검색</button>
+          <button type="reset" id="reset" class="button default">초기화</button>
+        </div>
+      </div>
+    </form>
+    <div id="result"></div>
+    <div id="report"></div>
+  </div>
+  <!-- 주소/우편번호 모달(쿠팡스타일) -->
+  <div class="modal-bg" id="modal-postcode-bg">
+    <div class="modal-postcode">
+      <div class="modal-postcode-header">
+        우편번호 찾기
+        <span class="modal-postcode-close" title="닫기">&times;</span>
+      </div>
+      <div class="modal-postcode-searchbox">
+        <input type="text" id="modal-postcode-input" placeholder="도로명, 건물명, 번지 입력" autocomplete="off" />
+        <span class="modal-postcode-clear-btn" title="입력 지우기">&times;</span>
+        <button type="button" class="modal-postcode-search-btn" title="검색">
+          <span class="icon icon1"></span>
+        </button>
+      </div>
+      <div class="modal-postcode-tip">
+        <div style="font-weight:600; margin-bottom:5px;">우편번호 통합검색 Tip</div>
+        <ul style="padding-left:14px; margin:0 0 0.5em 0;">
+          <li><strong>동/읍/면/리 + 번지</strong> (예: 왕궁면 동용리 444)</li>
+          <li><strong>도로명 + 건물번호</strong> (예: 고산로 488)</li>
+          <li><strong>건물명</strong> (예: 국립농업과학원)</li>
+        </ul>
+      </div>
+      <ul id="modal-postcode-result-list" class="modal-postcode-result-list"></ul>
+      <div id="modal-postcode-pagination" class="modal-postcode-pagination"></div>
+    </div>
+  </div>
+</body>
+</html>
