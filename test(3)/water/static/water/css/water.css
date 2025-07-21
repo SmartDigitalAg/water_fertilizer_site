@@ -22,3 +22,13 @@ select:focus, input[type="date"]:focus, input[type="text"]:focus { outline:none;
 .button.default {background: #fff; color: #000; border: 1px solid #000;}  /* 버튼 (흰색) */
 .button-center {text-align: center; margin-top: 1.5em;}
 .button-center .button {border-radius: 3px;}
+.icon {
+  display: inline-block;
+  background-image: url("../images/icon.png");
+  background-repeat: no-repeat;
+  width: 18px; height: 17px; background-position: 0px 0px;}
+.search-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transform: translateY(1.5px);}
