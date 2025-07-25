@@ -751,10 +751,6 @@ def main():
 
                 st.table(recommend_data)
 
-            # 원시 데이터 확인
-            with st.expander("📋 원시 데이터 확인"):
-                st.json(data)
-
         else:
             st.error(f"❌ 데이터 조회 실패: {result['error']}")
 

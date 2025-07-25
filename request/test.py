@@ -1,3 +1,4 @@
+# 복합비료(시중유통비료) 추천순위 까지 request + 면적 단위 변환 기능
 import streamlit as st
 import requests
 import json
@@ -188,7 +189,8 @@ def main():
         crop_category = st.selectbox(
             "작물유형",
             options=list(CROP_CATEGORIES.keys()),
-            format_func=lambda x: CROP_CATEGORIES[x]
+            format_func=lambda x: CROP_CATEGORIES[x],
+            key="crop_category_select"
         )
 
     with col2:
@@ -198,24 +200,85 @@ def main():
             crop_code = st.selectbox(
                 "작물",
                 options=crop_options,
-                format_func=lambda x: "작물 선택" if x == "" else CROPS[x]
+                format_func=lambda x: "작물 선택" if x == "" else CROPS[x],
+                key="crop_select"
             )
         else:
-            st.selectbox("작물", options=[""], format_func=lambda x: "작물 선택", disabled=True)
+            st.selectbox(
+                "작물",
+                options=[""],
+                format_func=lambda x: "작물 선택",
+                disabled=True,
+                key="crop_select_disabled"
+            )
             crop_code = ""
 
     with col3:
         st.write("**대상지 면적**")
-        area = st.number_input("면적", min_value=0.1, step=0.1, value=None, placeholder="면적을 입력하세요")
+
+        # 단위에 따른 기본값 설정
+        if 'unit_select' in st.session_state:
+            current_unit = st.session_state.unit_select
+        else:
+            current_unit = "1"  # 기본값: 제곱미터
+
+        # 초기값 설정 (빈 상태)
+        if 'area_value' not in st.session_state:
+            st.session_state.area_value = None
+            st.session_state.prev_unit = current_unit
+
+        # 단위가 변경되었을 때 면적값 변환 (값이 있을 때만)
+        if (st.session_state.prev_unit != current_unit and
+                st.session_state.area_value is not None and
+                st.session_state.area_value > 0):
+            current_area = st.session_state.area_value
+            if current_unit == "1":  # 평 → 제곱미터
+                st.session_state.area_value = current_area * 3.3058
+            else:  # 제곱미터 → 평
+                st.session_state.area_value = current_area / 3.3058
+            st.session_state.prev_unit = current_unit
+        elif st.session_state.prev_unit != current_unit:
+            # 값이 없을 때는 단위만 업데이트
+            st.session_state.prev_unit = current_unit
+
+        # 값이 있으면 그 값을, 없으면 None을 사용
+        input_value = st.session_state.area_value if st.session_state.area_value is not None else None
+
+        area = st.number_input(
+            "면적",
+            min_value=0.1,
+            value=input_value,
+            step=0.1,
+            key="area_input",
+            placeholder="면적을 입력하세요"
+        )
+
+        # session_state 값과 입력값 동기화
+        if area != st.session_state.area_value:
+            st.session_state.area_value = area
 
     with col4:
         st.write("**단위**")
-        area_unit = st.radio("단위", options=["1", "2"], format_func=lambda x: "㎡" if x == "1" else "평")
+        area_unit = st.radio(
+            "단위 선택",
+            options=["1", "2"],
+            format_func=lambda x: "㎡" if x == "1" else "평",
+            key="unit_select"
+        )
 
     with col5:
         st.write("**검색**")
-        search_enabled = crop_category == "04" and crop_code != "" and area is not None and area > 0
-        search_btn = st.button("🔍 검색", type="primary", use_container_width=True, disabled=not search_enabled)
+        # 과채류가 선택되고 작물도 선택되고 면적이 입력된 경우에만 검색 버튼 활성화
+        search_enabled = (crop_category == "04" and
+                          crop_code != "" and
+                          area is not None and
+                          area > 0)
+        search_btn = st.button(
+            "🔍 검색",
+            type="primary",
+            use_container_width=True,
+            disabled=not search_enabled
+        )
 
     # 검색 결과
     if search_btn and search_enabled:
@@ -299,6 +362,8 @@ def main():
                 st.markdown("※ 위 추천비료는 기준값에서 질소, 인산, 칼리 순으로 근접한 비료가 선정되었습니다.")
             else:
                 st.warning("복합비료 추천 정보를 불러올 수 없습니다.")
+
+
 
         else:
             st.error(f"❌ 데이터 조회 실패: {result['error']}")

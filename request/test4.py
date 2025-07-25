@@ -1,4 +1,4 @@
-# 복합비료(시중유통비료) 완전 연동
+# 복합비료 처방 시스템 - 흙토람 완전 연동
 import streamlit as st
 import requests
 import json
@@ -464,42 +464,56 @@ def main():
         # 밑거름 복합비료 처방
         st.markdown("**밑거름 복합비료 처방(kg/실면적)**")
 
-        col1, col2 = st.columns([1, 1])
+        # 라벨과 체크박스를 같은 행에 배치
+        col1, col2 = st.columns([3, 1])
 
         with col1:
-            pre_fert_type = st.selectbox(
-                "밑거름 비종선택",
-                options=["사용자직접입력"] + list(PRE_FERTILIZERS.keys()),
-                format_func=lambda x: "사용자 직접 입력" if x == "사용자직접입력" else PRE_FERTILIZERS.get(x, x),
-                key="pre_fert_select"
-            )
-
+            st.write("**밑거름 비종선택**")
         with col2:
-            if pre_fert_type == "사용자직접입력":
+            pre_user_input = st.checkbox("사용자 직접 입력", key="pre_user_input_check")
+
+        # 드롭다운은 별도로 배치
+        pre_fert_type = st.selectbox(
+            "비종선택",  # 라벨 숨김용
+            options=[""] + list(PRE_FERTILIZERS.keys()),
+            format_func=lambda x: "선택" if x == "" else PRE_FERTILIZERS.get(x, x),
+            key="pre_fert_select",
+            label_visibility="collapsed"  # 라벨 숨김
+        )
+
+        # 입력 필드나 메트릭 표시
+        if pre_user_input:
+            col_n, col_p, col_k, col_qy = st.columns(4)
+            with col_n:
                 pre_n = st.number_input("질소(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="pre_n",
                                         format="%.1f")
+            with col_p:
                 pre_p = st.number_input("인산(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="pre_p",
                                         format="%.1f")
+            with col_k:
                 pre_k = st.number_input("칼리(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="pre_k",
                                         format="%.1f")
+            with col_qy:
                 pre_qy = st.number_input("비료(1포대당) kg", min_value=1.0, value=20.0, step=1.0, key="pre_qy",
                                          format="%.1f")
-            else:
-                npk_info = pre_fert_type.split('-')
-                pre_n = float(npk_info[0])
-                pre_p = float(npk_info[1])
-                pre_k = float(npk_info[2])
-                pre_qy = float(npk_info[3])
+        elif pre_fert_type and pre_fert_type != "":
+            npk_info = pre_fert_type.split('-')
+            pre_n = float(npk_info[0])
+            pre_p = float(npk_info[1])
+            pre_k = float(npk_info[2])
+            pre_qy = float(npk_info[3])
 
-                col_a, col_b, col_c, col_d = st.columns(4)
-                with col_a:
-                    st.metric("질소(%)", f"{pre_n:.1f}")
-                with col_b:
-                    st.metric("인산(%)", f"{pre_p:.1f}")
-                with col_c:
-                    st.metric("칼리(%)", f"{pre_k:.1f}")
-                with col_d:
-                    st.metric("포대당(kg)", f"{pre_qy:.1f}")
+            col_a, col_b, col_c, col_d = st.columns(4)
+            with col_a:
+                st.metric("질소(%)", f"{pre_n:.1f}")
+            with col_b:
+                st.metric("인산(%)", f"{pre_p:.1f}")
+            with col_c:
+                st.metric("칼리(%)", f"{pre_k:.1f}")
+            with col_d:
+                st.metric("포대당(kg)", f"{pre_qy:.1f}")
+        else:
+            pre_n = pre_p = pre_k = pre_qy = 0
 
         # 밑거름 계산 (성분값이 모두 0이 아닐 때만)
         if pre_n + pre_p + pre_k > 0:
@@ -534,10 +548,7 @@ def main():
 
                     if calc_data.get('nh_pre_stad_msg'):
                         # 선택한 비료명 추가
-                        if pre_fert_type != "사용자직접입력":
-                            fertilizer_name = PRE_FERTILIZERS[pre_fert_type]
-                            modified_msg = f"{fertilizer_name} {calc_data['nh_pre_stad_msg']}"
-                        else:
+                        if pre_user_input:
                             # 소수점 첫째자리로 포맷팅
                             npk_format = f"({pre_n:.1f}-{pre_p:.1f}-{pre_k:.1f})"
                             original_msg = calc_data['nh_pre_stad_msg']
@@ -545,6 +556,11 @@ def main():
                             import re
                             modified_msg = re.sub(r'\([^)]+\)', npk_format, original_msg)
                             modified_msg = f"사용자선택 {modified_msg}"
+                        elif pre_fert_type and pre_fert_type != "":
+                            fertilizer_name = PRE_FERTILIZERS[pre_fert_type]
+                            modified_msg = f"{fertilizer_name} {calc_data['nh_pre_stad_msg']}"
+                        else:
+                            modified_msg = calc_data['nh_pre_stad_msg']
                         st.info(f"📋 {modified_msg}")
 
                     # 처방불가 메시지
@@ -556,42 +572,56 @@ def main():
         # 웃거름 복합비료 처방
         st.markdown("**웃거름 복합비료 처방(kg/실면적)**")
 
-        col1, col2 = st.columns([1, 1])
+        # 라벨과 체크박스를 같은 행에 배치
+        col1, col2 = st.columns([3, 1])
 
         with col1:
-            post_fert_type = st.selectbox(
-                "웃거름 비종선택",
-                options=["사용자직접입력"] + list(POST_FERTILIZERS.keys()),
-                format_func=lambda x: "사용자 직접 입력" if x == "사용자직접입력" else POST_FERTILIZERS.get(x, x),
-                key="post_fert_select"
-            )
-
+            st.write("**웃거름 비종선택**")
         with col2:
-            if post_fert_type == "사용자직접입력":
+            post_user_input = st.checkbox("사용자 직접 입력", key="post_user_input_check")
+
+        # 드롭다운은 별도로 배치
+        post_fert_type = st.selectbox(
+            "비종선택",  # 라벨 숨김용
+            options=[""] + list(POST_FERTILIZERS.keys()),
+            format_func=lambda x: "선택" if x == "" else POST_FERTILIZERS.get(x, x),
+            key="post_fert_select",
+            label_visibility="collapsed"  # 라벨 숨김
+        )
+
+        # 입력 필드나 메트릭 표시
+        if post_user_input:
+            col_n, col_p, col_k, col_qy = st.columns(4)
+            with col_n:
                 post_n = st.number_input("질소(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="post_n",
                                          format="%.1f")
+            with col_p:
                 post_p = st.number_input("인산(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="post_p",
                                          format="%.1f")
+            with col_k:
                 post_k = st.number_input("칼리(%)", min_value=0.0, max_value=100.0, value=0.0, step=0.1, key="post_k",
                                          format="%.1f")
+            with col_qy:
                 post_qy = st.number_input("비료(1포대당) kg", min_value=1.0, value=20.0, step=1.0, key="post_qy",
                                           format="%.1f")
-            else:
-                npk_info = post_fert_type.split('-')
-                post_n = float(npk_info[0])
-                post_p = float(npk_info[1])
-                post_k = float(npk_info[2])
-                post_qy = float(npk_info[3])
+        elif post_fert_type and post_fert_type != "":
+            npk_info = post_fert_type.split('-')
+            post_n = float(npk_info[0])
+            post_p = float(npk_info[1])
+            post_k = float(npk_info[2])
+            post_qy = float(npk_info[3])
 
-                col_a, col_b, col_c, col_d = st.columns(4)
-                with col_a:
-                    st.metric("질소(%)", f"{post_n:.1f}")
-                with col_b:
-                    st.metric("인산(%)", f"{post_p:.1f}")
-                with col_c:
-                    st.metric("칼리(%)", f"{post_k:.1f}")
-                with col_d:
-                    st.metric("포대당(kg)", f"{post_qy:.1f}")
+            col_a, col_b, col_c, col_d = st.columns(4)
+            with col_a:
+                st.metric("질소(%)", f"{post_n:.1f}")
+            with col_b:
+                st.metric("인산(%)", f"{post_p:.1f}")
+            with col_c:
+                st.metric("칼리(%)", f"{post_k:.1f}")
+            with col_d:
+                st.metric("포대당(kg)", f"{post_qy:.1f}")
+        else:
+            post_n = post_p = post_k = post_qy = 0
 
         # 웃거름 계산 (성분값이 모두 0이 아닐 때만)
         if post_n + post_p + post_k > 0:
@@ -626,10 +656,7 @@ def main():
 
                     if calc_data.get('nh_post_stad_msg'):
                         # 선택한 비료명 추가
-                        if post_fert_type != "사용자직접입력":
-                            fertilizer_name = POST_FERTILIZERS[post_fert_type]
-                            modified_msg = f"{fertilizer_name} {calc_data['nh_post_stad_msg']}"
-                        else:
+                        if post_user_input:
                             # 소수점 첫째자리로 포맷팅
                             npk_format = f"({post_n:.1f}-{post_p:.1f}-{post_k:.1f})"
                             original_msg = calc_data['nh_post_stad_msg']
@@ -637,6 +664,11 @@ def main():
                             import re
                             modified_msg = re.sub(r'\([^)]+\)', npk_format, original_msg)
                             modified_msg = f"사용자선택 {modified_msg}"
+                        elif post_fert_type and post_fert_type != "":
+                            fertilizer_name = POST_FERTILIZERS[post_fert_type]
+                            modified_msg = f"{fertilizer_name} {calc_data['nh_post_stad_msg']}"
+                        else:
+                            modified_msg = calc_data['nh_post_stad_msg']
                         st.info(f"📋 {modified_msg}")
 
                     # 처방불가 메시지
