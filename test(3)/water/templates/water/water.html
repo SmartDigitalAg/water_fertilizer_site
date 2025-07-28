@@ -27,7 +27,7 @@
     <h1>노지 밭 물사용 처방</h1>
     <div class="form-box">
       <div>
-        <label>· 지역</label>
+        <label style="font-weight: bold;">· 지역</label>
         <select id="sido" style="width: 150px;">
             <option value="">선택</option>
             <option value="52">전북특별자치도</option>
@@ -39,7 +39,7 @@
         <button type="button" class="button">지도에서 선택</button>
       </div>
       <div>
-        <label>· 작물</label>
+        <label style="font-weight: bold;">· 작물</label>
         <select id="crop_gbn">
           <option value="">작물분류</option>
           <option value="1">곡류</option>
@@ -49,12 +49,12 @@
         </select>
       </div>
       <div>
-        <label>· 파종·정식시기</label>
+        <label style="font-weight: bold;">· 파종·정식시기</label>
         <input type="date" id="exam_day" />
         <span id="recommended">권장 파종·정식시기: ―</span>
       </div>
       <div>
-        <label>· 기상정보</label>
+        <label style="font-weight: bold;">· 기상정보</label>
         <select id="weather">
           <option value="">평년선택</option>
           <option value="1">최근3년</option>
@@ -62,7 +62,7 @@
         </select>
       </div>
       <div>
-        <label>· 관수방법</label>
+        <label style="font-weight: bold;">· 관수방법</label>
         <select id="irrigation">
           <option value="">관수방법</option>
           <option value="1">점적관수</option>
@@ -72,16 +72,16 @@
         </select>
       </div>
       <div>
-        <label>· 노지밭면적</label>
+        <label style="font-weight: bold;">· 노지밭면적</label>
         <input type="text" id="area" />
         <span class="unit">m²</span>
       </div>
-      <div class="info">* 기상정보 데이터 산정에 따라 조회내용표출이 다소 지연될 수 있습니다.</div>
+      <div class="info" style="font-weight: bold;">* 기상정보 데이터 산정에 따라 조회내용표출이 다소 지연될 수 있습니다.</div>
       <div class="button-center">
-        <button type="button" class="button search-button">
+        <button id="search" type="button" class="button">
             <span class="icon"></span>검색
         </button>
-        <button type="button" class="button default">초기화</button>
+        <button id="reset" type="button" class="button default">초기화</button>
       </div>
     </div>
   </div>

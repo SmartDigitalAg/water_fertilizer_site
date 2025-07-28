@@ -4,21 +4,22 @@
   padding: 1.2em 1.5em;
   margin-bottom: 1.4em;
   border-radius: 0;}
-.form-box > div {margin: 0.8em 0;}
+.form-box > div {margin: 0.8em 0;}    /*박스끼리 간격*/
 .form-box label {
   min-width: 120px;
   display: inline-block;
-  margin-right: 20px;}  /* 라벨과 빈칸 사이 간격 */
+  margin-right: 20px;}    /* 라벨과 빈칸 사이 간격 */
+
 select, input[type="date"], input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px; font-size:1em; padding:0 10px;
-   width: 120px; margin-right:0.5em; box-sizing:border-box; }
+   width: 120px; margin-right:0.5em; box-sizing:border-box;}
   /*box-shadow: 0 2px 4px rgba(0,0,0,0.1); !* 드롭다운 박스 그림자 있는게 더 괜찮음. 디폴트 만들어두고 이걸로 대체*!}*/
 select:focus, input[type="date"]:focus, input[type="text"]:focus { outline:none; border:2px solid #000;}
 .unit {margin-left: -7px;}
 .info {color: #d32f2f; font-size: 0.9em;}  /* 빨간색 글씨*/
-/* 버튼 기본 스타일 (갈색) */
-.button { height: 38px; padding: 0 15px; font-size: 1em;
- border: none; cursor: pointer; margin-right: 0.5em;
- box-sizing: border-box; background: #6D4C41; color: white;}
+
+.button {height: 38px; padding: 0 15px; font-size: 1em; border: 1px solid transparent; cursor: pointer;
+ margin-right: 0.5em; box-sizing: border-box; background: #6D4C41; color: white; border-radius: 3px;
+display: inline-flex; align-items: center; justify-content: center; gap: 5px; vertical-align: top;}    /* 버튼 기본 스타일 (갈색) */
 .button.default {background: #fff; color: #000; border: 1px solid #000;}  /* 버튼 (흰색) */
 .button-center {text-align: center; margin-top: 1.5em;}
 .button-center .button {border-radius: 3px;}
@@ -27,8 +28,3 @@ select:focus, input[type="date"]:focus, input[type="text"]:focus { outline:none;
   background-image: url("../images/icon.png");
   background-repeat: no-repeat;
   width: 18px; height: 17px; background-position: 0px 0px;}
-.search-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transform: translateY(1.5px);}
