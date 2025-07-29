@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>비료사용처방 체험하기</title>
+  <meta name="viewport" content="width=1024,user-scalable=no">
+  <style>
+    body { background: #fff; font-family: 'Noto Sans KR', sans-serif; color: #222; margin: 0; }
+    .container { max-width: 950px; margin: 40px auto; padding: 2em 2.5em; background: #fff;
+        border: 1px solid #e0e0e0;   /* 전체 테두리! */
+        border-radius: 0;}
+    h1 { margin-bottom: 0.3em; font-size: 2.1em; }
+    .desc { color: #555; font-size: 1em; margin-bottom: 1.5em; }
+    nav { margin-bottom: 1em; }
+    .nav-link { color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em; }
+    .nav-link:hover { background: #f5eee5; color: #222; border-radius: 6px; }
+    .nav-menu { display: inline-block; position: relative; }
+    .dropdown-content { display: none; position: absolute; left: 0; min-width: 190px; background: #fff; box-shadow: 0 6px 18px 0 rgba(120,30,180,0.11); border: 1px solid #dedede; border-radius: 8px; z-index: 100; }
+    .dropdown-link { display: block; padding: 12px 18px; color: #222; font-size: 1em; text-decoration: none; }
+    .dropdown-link:hover { background: #f5eee5; color: #222; }
+    .nav-menu:hover .dropdown-content { display: block; }
+    .input-row { display: flex; align-items: center; margin-bottom: 0.7em; flex-wrap: wrap; }
+    .input-row label { font-weight: bold; margin-right: 0.8em; }
+    select, input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px;  font-size:1em; padding:0 10px;
+      min-width:110px; margin-right:0.8em; box-sizing:border-box; }
+    .unit-radio { margin-left: 12px; font-size: 0.98em; }
+    .chem-table { width: 100%; border-collapse: collapse; margin: 1.4em 0 2em 0; background: #fafafb; }
+    .chem-table td, .chem-table th { border: 1px solid #e2e2e2; padding: 0.7em 0.9em; }
+    .chem-table th { background: #f7f7f7; width: 110px; font-size: 1em; }
+    .chem-table input { width: 80px; text-align: right; }
+    .chem-table .unit { font-size: 0.97em; color: #888; margin-left: 0.4em; }
+    .chem-table .chemlabel { font-weight: bold; }
+    .chem-table tr { height: 46px; }
+    .center-btn { text-align: center; margin-top: 1.1em; margin-bottom: 2em; }
+    .main-btn { font-size: 1.1em; background: #e68536; color: #fff; border: none; border-radius: 5px; padding: 0.38em 1.6em; }
+    .result-flex { display: flex; gap: 36px; margin-bottom: 1.5em; flex-wrap: wrap; }
+    .result-table-wrap { flex: 1 1 340px; min-width: 300px; }
+    .result-table-title { font-weight: bold; margin-bottom: 0.4em; font-size: 1.08em; display: flex; align-items: center; }
+    .result-section table { border-collapse: collapse; width: 100%; margin-bottom: 0.5em; }
+    .result-section th, .result-section td { border: 1px solid #c6c6c6; padding: 0.6em; text-align: center; font-size: 1em; }
+    .result-section th { background: #f5f5f5; }
+    .result-section .row-title { font-weight: bold; background: #fafafa; }
+    .subtitle { font-weight: bold; margin: 1.2em 0 0.4em 0; font-size: 1.08em; }
+    .btn { padding: 0.45em 1.5em; background: #6495ed; color: #fff; border: none; border-radius: 5px; cursor: pointer; margin: 1em 0;}
+    .btn:hover { background: #3d78c2;}
+    .btn-search { background:#fff; color:#222; border:2px solid #222; padding:6px 22px; font-size:1em; height:38px; min-width:85px; cursor:pointer; }
+    .note { font-size: 0.96em; color: #666; margin: 0.3em 0 1em 0;}
+    .radio-list, .checkbox-list { margin: 0.6em 0; }
+    .form-inline > * { margin-right: 1.2em; }
+    .fert-section2 { margin-top: 1em; border: 1px solid #e0e0e0; background: #fff; border-radius: 7px; padding: 1.2em 1.2em 0.7em 1.2em; }
+    .fert-section2 h3 { margin-top: 0; font-size: 1.12em; color: #000; }
+    .fert-table { width: 100%; border-collapse: collapse; margin-top: 0.5em; margin-bottom: 0.7em; background: #fafafb;}
+    .fert-table th, .fert-table td { border: 1px solid #ccc; padding: 0.6em 0.8em; }
+    .fert-table td { text-align: left; }
+    .fert-table input[type="text"] { width: 56px; text-align: right;}
+    .fert-table label { margin-right: 0; font-weight: normal; }
+    .fert-table .warn { color: #cc3300; font-size: 0.95em; font-weight: normal; text-align: left; }
+    @media (max-width: 900px) {
+      .container { padding: 1.1em; }
+      .chem-table td, .chem-table th { padding: 0.45em 0.4em; }
+      .main-btn { font-size: 1em; padding: 0.3em 1.1em; }
+      .result-section th, .result-section td { padding: 0.42em 0.36em; }
+      .result-flex { flex-direction: column; gap: 10px; }
+      .fert-section2 { padding: 0.8em 0.3em 0.6em 0.3em; }
+      .fert-table th, .fert-table td { padding: 0.44em 0.4em; }
+    }
+    .form-box {
+      background: #faf9f7;
+      border: 1px solid #e0e0e0;
+      padding: 1.2em 1.5em;
+      margin-bottom: 1.4em;
+      border-radius: 0;
+    }
+    .compost-input {
+      width: 80px;        /* 원하는 크기로 조정 */
+      height: 38px;
+      font-size: 1em;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <nav>
+    <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+    <a class="nav-link" href="{% url 'water:water' %}">물사용처방</a> |
+    <span class="nav-menu">
+      <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+      <div class="dropdown-content">
+        <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+        <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+        <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+      </div>
+    </span>
+  </nav>
+  <h1>비료사용처방 체험하기</h1>
+  <div class="desc">
+    ※ 재배하기를 원하는 작물에 대해 임시 처방서를 제공합니다.<br>
+    시군 농업기술센터에서 지번별로 토양시료를 채취 분석한 토양검정정보를 이용하였으므로 보다 정확한 비료사용처방을 받기 원하시면 관할 농업기술센터로 문의하시기 바랍니다.<br>
+  </div>
+  <form id="fertilizer-form" autocomplete="off">
+      <div class="form-box">
+        <div class="input-row">
+          <label>경지구분</label>
+          <label><input type="radio" name="field_type" value="논" checked> 논</label>
+          <label><input type="radio" name="field_type" value="밭"> 밭</label>
+          <label><input type="radio" name="field_type" value="시설"> 시설</label>
+          <label><input type="radio" name="field_type" value="과수"> 과수</label>
+          <label><input type="radio" name="field_type" value="유기농(논)"> 유기농(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(논)"> 간척지(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(밭)"> 간척지(밭)</label>
+          <label><input type="radio" name="field_type" value="임야"> 임야</label>
+          <label><input type="radio" name="field_type" value="기타"> 기타</label>
+        </div>
+        <div class="input-row">
+          <label>작물</label>
+          <select><option>작물 유형 선택</option><option>곡류(벼)</option><option>서류</option></select>
+          <select><option>작물 선택</option><option>벼</option><option>고구마</option></select>
+          <button type="button" class="btn-search" onclick="alert('작물명검색 더미입니다');">작물명검색</button>
+        </div>
+        <div class="input-row">
+          <label>대상지면적</label>
+          <input type="text" id="area" style="width:90px;">
+          <label class="unit-radio"><input type="radio" name="area_gb" value="㎡" checked> 제곱미터(㎡)</label>
+          <label class="unit-radio"><input type="radio" name="area_gb" value="평"> 평</label>
+        </div>
+      </div>
+    <table class="chem-table">
+      <tr><th><label class="chemlabel">(*) pH</label></th><td><input type="text" name="ph"></td>
+          <th><label class="chemlabel">(*) 유기물</label></th><td><input type="text" name="om"> <span class="unit">g/kg</span></td></tr>
+      <tr><th><label class="chemlabel">(*) 유효인산</label></th><td><input type="text" name="available_p"> <span class="unit">mg/kg</span></td>
+          <th><label class="chemlabel">(*) 칼륨</label></th><td><input type="text" name="k"> <span class="unit">cmol+/kg</span></td></tr>
+      <tr><th><label class="chemlabel">(*) 칼슘</label></th><td><input type="text" name="ca"> <span class="unit">cmol+/kg</span></td>
+          <th><label class="chemlabel">(*) 마그네슘</label></th><td><input type="text" name="mg"> <span class="unit">cmol+/kg</span></td></tr>
+      <tr><th><label class="chemlabel">유효규산</label></th><td><input type="text" name="sio2"> <span class="unit">mg/kg</span></td>
+          <th><label class="chemlabel">(*) 전기전도도</label></th><td><input type="text" name="ec"> <span class="unit">dS/m</span></td></tr>
+      <tr><th><label class="chemlabel">석회소요량</label></th><td><input type="text" name="lime"> <span class="unit">kg/10a</span></td>
+          <th><label class="chemlabel">질산태질소</label></th><td><input type="text" name="no3_n"> <span class="unit">mg/kg</span></td></tr>
+      <tr><th><label class="chemlabel">양이온치환용량</label></th><td><input type="text" name="cec"> <span class="unit">cmol+/kg</span></td>
+          <th><label class="chemlabel">암모니아태질소</label></th><td><input type="text" name="nh4_n"> <span class="unit">mg/kg</span></td></tr>
+    </table>
+    <div class="center-btn">
+      <button type="submit" class="main-btn">결과값</button>
+    </div>
+  </form>
+  <div id="resultSection" class="result-section" style="display:none;">
+    <div class="result-flex">
+      <div class="result-table-wrap">
+        <div class="result-table-title">&#9654; 성분량(kg/10a)</div>
+        <table>
+          <tr><th></th><th>질소</th><th>인산</th><th>칼리</th></tr>
+          <tr><td class="row-title">밑거름</td><td id="n_base"></td><td id="p_base"></td><td id="k_base"></td></tr>
+          <tr><td class="row-title">웃거름</td><td id="n_top"></td><td id="p_top"></td><td id="k_top"></td></tr>
+        </table>
+      </div>
+      <div class="result-table-wrap">
+        <div class="result-table-title">&#9654; 추천량(kg/실면적)</div>
+        <table>
+          <tr><th></th><th>요소</th><th>용성인비</th><th>염화칼리</th></tr>
+          <tr><td class="row-title">밑거름</td><td id="urea_base"></td><td id="sup_p_base"></td><td id="kcl_base"></td></tr>
+          <tr><td class="row-title">웃거름</td><td id="urea_top"></td><td id="sup_p_top"></td><td id="kcl_top"></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="subtitle"> &#9654; 비료종류</div>
+    <div class="radio-list">
+      <label><input type="radio" name="fertilizer_type" checked> 복합비료</label>
+      <label><input type="radio" name="fertilizer_type"> 유기질비료</label>
+    </div>
+    <div class="subtitle"> &#9654; 복합비료(시중유통비료) 추천 순위</div>
+    <table>
+      <tr><th></th><th>추천 비료<br>(1순위)</th><th>2순위</th><th>3순위</th></tr>
+      <tr><td class="row-title">밑거름</td><td id="base1"></td><td id="base2"></td><td id="base3"></td></tr>
+      <tr><td class="row-title">웃거름</td><td id="top1"></td><td id="top2"></td><td id="top3"></td></tr>
+    </table>
+    <div class="note">※ 위 추천비료는 기준값에서 질소, 인산, 칼리 순으로 근접한 비료가 선정되었습니다.<br>
+      ※ 밑거름, 웃거름 복합비료(시중유통비료) 처방 시 추천순위를 클릭하시거나 아래화면에서 비종 선택 및 사용자 직접입력을 클릭하신 후 비료성분량을 입력하세요.</div>
+    <div class="subtitle"> &#9654; 복합비료 처방방식</div>
+    <div class="radio-list">
+      <label><input type="radio" name="prescript_mode" checked> 질소기준처방(기존방식)</label>
+      <label><input type="radio" name="prescript_mode"> 인산기준처방</label>
+      <label><input type="radio" name="prescript_mode"> 칼리기준처방</label>
+    </div>
+    <div class="fert-section2" id="pre_sec">
+      <h3>&#9654; 밑거름 복합비료 처방(kg/실면적)</h3>
+      <table class="fert-table">
+        <tr>
+          <td colspan="6" style="text-align:left;">
+            <label>비종선택
+              <select id="pre_fert_sel">
+                <option>흙사랑21 (21-6-8)</option>
+                <option>복합비료(21-17-17)</option>
+                <option>인산칼리맞춤1호 (20-18-15)</option>
+              </select>
+            </label>
+            <label>사용자 직접 입력 <input type="checkbox" id="pre_user"></label>
+            <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 종류(%)</td>
+          <td colspan="4" style="text-align:left; white-space:nowrap;">
+            질소: <input type="text" id="pre_n" value="21" readonly>
+            인산: <input type="text" id="pre_p" value="6" readonly>
+            칼리: <input type="text" id="pre_k" value="8" readonly>
+            비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 추천량</td>
+          <td colspan="4" style="text-align:left;"><input type="text" id="pre_amt" value="3.3"></td>
+        </tr>
+        <tr>
+          <td>인산 추가필요량</td>
+          <td colspan="2"><input type="text" id="pre_pAdd" value="0.2"></td>
+          <td>칼리 추가필요량</td>
+          <td colspan="2"><input type="text" id="pre_kAdd" value="0.4"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="fert-section2" id="post_sec">
+      <h3>&#9654; 웃거름 복합비료 처방(kg/실면적)</h3>
+      <table class="fert-table">
+        <tr>
+          <td colspan="6" style="text-align:left;">
+            <label>비종선택
+              <select id="post_fert_sel">
+                <option>엔케이804 (18-0-14)</option>
+                <option>엔케이도BS(28-0-12)</option>
+                <option>원샷NK(25-0-10)</option>
+              </select>
+            </label>
+            <label>사용자 직접 입력 <input type="checkbox" id="post_user"></label>
+            <span class="warn">&nbsp;※ 질소, 인산 및 칼리 성분을 직접 입력 시 선택하세요.</span>
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 종류(%)</td>
+          <td colspan="4" style="text-align:left; white-space:nowrap;">
+            질소: <input type="text" id="post_n" value="18" readonly>
+            인산: <input type="text" id="post_p" value="0" readonly>
+            칼리: <input type="text" id="post_k" value="14" readonly>
+            비료(1포대당): <input type="text" value="20" style="width:40px;" readonly> kg
+          </td>
+        </tr>
+        <tr>
+          <td>복합비료 추천량</td>
+          <td colspan="4" style="text-align:left;"><input type="text" id="post_amt" value="2.1"></td>
+        </tr>
+        <tr>
+          <td>인산 추가필요량</td>
+          <td colspan="2"><input type="text" id="post_pAdd" value="0.4"></td>
+          <td>칼리 추가필요량</td>
+          <td colspan="2"><input type="text" id="post_kAdd" value="0.1"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="subtitle"> &#9654; 혼합가축분퇴비 처방 (kg/실면적)
+      <button class="btn" style="background:#aaa;color:#222;" onclick="toggleCompost();return false;">접기</button>
+    </div>
+    <div id="compostSection">
+      <table class="fert-table">
+        <tr>
+          <th style="width:140px;">가축분 혼합 비율</th>
+          <td>
+            우분: <input class="input-short compost-input" type="number" value="25"> (%) &nbsp;
+            돈분: <input class="input-short compost-input" type="number" value="14"> (%) &nbsp;
+            계분: <input class="compost-input" type="number" value="26"> (%) &nbsp;
+            톱밥: <input class="compost-input" type="number" value="21"> (%)
+          </td>
+        </tr>
+      </table>
+
+      <div class="note" style="margin-bottom:1em;">
+        ※ 퇴비에 가축분 혼합비율이 표기되어 있을 경우 입력하세요.<br>
+        (미입력시 평균값 적용)<br>
+        우분, 돈분, 계분, 톱밥 중 한 종류가 50% 이상일 경우 기존의 우분, 돈분, 계분퇴비, 톱밥 추천량을 참고하면 됩니다.<br>
+        유기물 적정범위를 초과할 경우에는 가축분퇴비 추천량이 계산되지 않습니다.
+      </div>
+    </div>
+    <button class="btn" style="background:#777;color:#fff;margin-top:0;" onclick="resetForm();return false;">초기화</button>
+  </div>
+</div>
+<script>
+  // 면적 변환
+  const areaInput = document.getElementById('area');
+  const areaRadios = document.getElementsByName('area_gb');
+  let prevUnit = "㎡";
+  function pyToM2(py) { return (parseFloat(py) * 3.3058).toFixed(2);}
+  function m2ToPy(m2) { return (parseFloat(m2) / 3.3058).toFixed(2);}
+  areaRadios.forEach(radio => {
+    radio.addEventListener("change", function() {
+      let val = areaInput.value.trim();
+      if(val === "" || isNaN(val)) { prevUnit = this.value; return; }
+      if(this.value !== prevUnit) {
+        areaInput.value = (this.value === "㎡") ? pyToM2(val) : m2ToPy(val);
+        prevUnit = this.value;
+      }
+    });
+  });
+  // 결과 더미값
+  document.getElementById('fertilizer-form').onsubmit = function(e) {
+    e.preventDefault();
+    showDummyResult();
+  };
+  function showDummyResult() {
+    document.getElementById('n_base').innerText = "4.9";
+    document.getElementById('p_base').innerText = "9.5";
+    document.getElementById('k_base').innerText = "2.1";
+    document.getElementById('n_top').innerText = "3.8";
+    document.getElementById('p_top').innerText = "0.0";
+    document.getElementById('k_top').innerText = "0.9";
+    document.getElementById('urea_base').innerText = "1.1";
+    document.getElementById('sup_p_base').innerText = "4.8";
+    document.getElementById('kcl_base').innerText = "0.4";
+    document.getElementById('urea_top').innerText = "0.8";
+    document.getElementById('sup_p_top').innerText = "0.0";
+    document.getElementById('kcl_top').innerText = "0.2";
+    document.getElementById('base1').innerText = "인산칼리맞춤1호(20-18-15)";
+    document.getElementById('base2').innerText = "야라밀라(12-11-18)";
+    document.getElementById('base3').innerText = "맞춤25호(10-10-7)";
+    document.getElementById('top1').innerText = "엔케이도BS(28-0-12)";
+    document.getElementById('top2').innerText = "원샷NK(25-0-10)";
+    document.getElementById('top3').innerText = "맞춤추비27호(20-0-9)";
+    document.getElementById('resultSection').style.display = 'block';
+    window.scrollTo({ top: document.getElementById('resultSection').offsetTop-60, behavior: 'smooth' });
+  }
+  // 퇴비 섹션 접기
+  function toggleCompost() {
+    const s = document.getElementById('compostSection');
+    s.style.display = (s.style.display=='none') ? 'block' : 'none';
+  }
+  // 초기화
+  function resetForm() {
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('fertilizer-form').reset();
+  }
+  // NPK 연동
+  document.getElementById('pre_user').addEventListener('change', function() {
+    const on = this.checked;
+    document.getElementById('pre_fert_sel').disabled = on;
+    document.getElementById('pre_n').readOnly = !on;
+    document.getElementById('pre_p').readOnly = !on;
+    document.getElementById('pre_k').readOnly = !on;
+  });
+  document.getElementById('post_user').addEventListener('change', function() {
+    const on = this.checked;
+    document.getElementById('post_fert_sel').disabled = on;
+    document.getElementById('post_n').readOnly = !on;
+    document.getElementById('post_p').readOnly = !on;
+    document.getElementById('post_k').readOnly = !on;
+  });
+  document.getElementById('pre_fert_sel').addEventListener('change', function() {
+    const idx = this.selectedIndex;
+    const arr = [{N:21,P:6,K:8}, {N:21,P:17,K:17}, {N:20,P:18,K:15}];
+    document.getElementById('pre_n').value = arr[idx].N;
+    document.getElementById('pre_p').value = arr[idx].P;
+    document.getElementById('pre_k').value = arr[idx].K;
+  });
+  document.getElementById('post_fert_sel').addEventListener('change', function() {
+    const idx = this.selectedIndex;
+    const arr = [{N:18,P:0,K:14}, {N:28,P:0,K:12}, {N:25,P:0,K:10}];
+    document.getElementById('post_n').value = arr[idx].N;
+    document.getElementById('post_p').value = arr[idx].P;
+    document.getElementById('post_k').value = arr[idx].K;
+  });
+</script>
+</body>
+</html>

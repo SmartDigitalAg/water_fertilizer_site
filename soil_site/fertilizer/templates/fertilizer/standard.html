@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>작물별 비료 표준사용량 처방</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'fertilizer/css/standard.css' %}">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+      <a class="nav-link" href="{% url 'water:water' %}">물사용처방</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
+    </nav>
+    <h1>작물별 비료 표준사용량 처방</h1>
+    <div class="form-box">
+      <div>
+        <label style="font-weight: bold;">· 작물 선택</label>
+        <select id="crop_type" style="width: 150px;">
+          <option value="">작물유형 선택</option>
+          {% for key, value in crop_categories.items %}
+              <option value="{{ key }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+        <select id="crop_code" style="width: 150px;">
+          <option value="">작물 선택</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 대상지면적</label>
+        <input type="text" id="area">
+        <label class="unit-radio"><input type="radio" name="area_unit" value="sqm" checked> 제곱미터(㎡)</label>
+        <label class="unit-radio"><input type="radio" name="area_unit" value="pyeong"> 평</label>
+      </div>
+      <div>
+        <button id="search" class="button">
+          <span class="icon"></span>검색
+        </button>
+        <span style="color: #666; font-size: 15px;">
+          ※ 현재 과채류만 조회 가능합니다.
+        </span>
+      </div>
+    </div>
+
+    <!-- 1. 결과 출력 영역 (최소한) -->
+    <div id="result" style="display: none; margin-top: 20px;"></div>
+  </div>
+
+  <!-- 2. JavaScript에서 사용할 작물 데이터 -->
+  <script>
+    const crops = {{ crops|safe }};
+  </script>
+
+  <script src="{% static 'fertilizer/js/standard.js' %}"></script>      <!-- JavaScript 파일 연결 -->
+</body>
+</html>
