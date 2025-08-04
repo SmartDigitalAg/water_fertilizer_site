@@ -1,0 +1,308 @@
+.form-box {
+  background: #faf9f7;        /* 폼 전체 배경색 */
+  border: 1px solid #e0e0e0;  /* 폼 전체 테두리 */
+  padding: 1.2em 1.5em;
+  margin-bottom: 1.4em;
+  border-radius: 0;}
+.form-box > div {margin: 0.8em 0;}    /*박스끼리 간격*/
+.form-box label {
+  width: 120px;
+  display: inline-block;
+  margin-right: 20px;}    /* 라벨과 빈칸 사이 간격 */
+
+select, input[type="date"], input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px; font-size:1em; padding:0 10px;
+   width: 120px; margin-right:0.5em; box-sizing:border-box;}
+  /*box-shadow: 0 2px 4px rgba(0,0,0,0.1); !* 드롭다운 박스 그림자 있는게 더 괜찮음. 디폴트 만들어두고 이걸로 대체*!}*/
+select:focus, input[type="date"]:focus, input[type="text"]:focus { outline:none; border:2px solid #000;}
+.unit {margin-left: -7px;}
+.info {color: #d32f2f; font-size: 0.9em;}  /* 빨간색 글씨*/
+
+.button {height: 38px; padding: 0 15px; font-size: 1em; border: 1px solid transparent; cursor: pointer;
+ margin-right: 0.5em; box-sizing: border-box; background: #6D4C41; color: white; border-radius: 3px;
+display: inline-flex; align-items: center; justify-content: center; gap: 5px; vertical-align: top;}    /* 버튼 기본 스타일 (갈색) */
+.button.default {background: #fff; color: #000; border: 1px solid #000;}  /* 버튼 (흰색) */
+.button-center {text-align: center; margin-top: 1.5em;}
+.button-center .button {border-radius: 3px;}
+.icon {
+  display: inline-block;
+  background-image: url("../images/icon.png");
+  background-repeat: no-repeat;
+  width: 18px; height: 17px; background-position: 0px 0px;}
+
+/*------------------------------주소 검색으로 수정-----------------------------*/
+/* 주소입력 필드 너비 확장 */
+.address-input-wrapper {
+  position: relative;
+  display: inline-block;
+  max-width: 400px;
+  width: 100%;
+  vertical-align: middle;
+}
+
+.address-input-wrapper input[type="text"] {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  font-size: 1em;
+  border: 1px solid #bcb69e;
+  padding: 0 34px 0 10px;
+  box-sizing: border-box;
+}
+
+.address-clear-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  font-size: 1.2em;
+  color: #b3b3b3;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.14s;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* -------------------- 주소 검색 모달창 -------------------- */
+.modal-bg { position: fixed; z-index: 5000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(36,36,36,0.22); display:none; }
+
+.modal-postcode {
+  background: #fff;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 95vw;
+  margin: 90px auto 0 auto;
+  box-shadow: 0 8px 34px 0 rgba(50,50,60,0.18);
+  position: relative;
+  padding-bottom:18px;
+  animation: modal-pop 0.17s;
+  min-height:420px;
+}
+
+@keyframes modal-pop {
+  from{ opacity:0; transform: translateY(-40px);}
+  to{ opacity:1; transform:translateY(0); }
+}
+
+.modal-postcode-header {
+  font-size: 1.15em;
+  font-weight: 600;
+  text-align:center;
+  padding: 18px 20px 11px 20px;
+  border-bottom: 1px solid #ececec;
+  position: relative;
+}
+
+.modal-postcode-close {
+  position: absolute;
+  right: 19px;
+  top: 16px;
+  font-size: 1.7em;
+  color: #888;
+  cursor: pointer;
+  font-family: Arial, "Noto Sans KR", sans-serif;
+  font-weight: 400;
+}
+
+.modal-postcode-close:hover {
+  color: #333;
+}
+
+.modal-postcode-searchbox {
+  display: flex;
+  align-items: center;
+  margin: 24px 24px 0 24px;
+  padding: 0;
+  gap: 0;
+}
+
+.modal-postcode-searchbox input[type="text"] {
+  flex: 1 1 0;
+  height:44px;
+  border: 2px solid #3683d6;
+  border-radius: 7px 7px 7px 7px;
+  font-size: 1.07em;
+  padding: 0 16px;
+  box-sizing: border-box;
+  outline: none;
+  background: #fff;
+  color: #263a61;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: border 0.2s;
+  min-width: 0;
+}
+
+.modal-postcode-searchbox input[type="text"]:focus {
+  border-color: #2372c7;
+}
+
+.modal-postcode-search-btn {
+  width: 44px;
+  height:44px;
+  min-width:44px;
+  border:none;
+  outline:none;
+  padding:0;
+  border-radius: 7px 7px 7px 7px;
+  background: #3683d6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor:pointer;
+  box-shadow:0 1px 4px 0 rgba(60,120,200,0.09);
+  transition: background 0.16s;
+  border: 2px solid #3683d6;
+  border-left: none;
+  margin-left: 0;
+}
+
+.modal-postcode-search-btn:hover {
+  background: #2462a8;
+}
+
+.icon1 {
+  width: 18px;
+  height: 17px;
+  background-position: 0px 0px;
+  filter: invert(1) brightness(9);
+}
+
+.modal-postcode-tip {
+  color: #252525;
+  border-radius:7px;
+  padding:13px 15px 11px 14px;
+  font-size:0.98em;
+  margin:0 22px 10px 22px;
+}
+
+.modal-postcode-tip strong {
+  color:#3683d6;
+}
+
+.modal-postcode-result-list {
+  max-height: 460px;
+  min-height: 460px;
+  overflow-y: auto;
+  margin: 0 24px 0 24px;
+  padding: 0;
+  border-top: 1px solid #efefef;
+  font-size: 1.04em;
+}
+
+.modal-postcode-pagination {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-postcode-result-list li {
+  list-style: none;
+  padding: 11px 8px 10px 8px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background 0.13s;
+  color: #293868;
+}
+
+.modal-postcode-result-list li:hover {
+  background: #e7f2fc;
+}
+
+.modal-postcode-result-list .no-result {
+  color: #bb3939;
+  text-align: center;
+  background: #f8f8f8;
+  font-weight: 500;
+}
+
+.modal-postcode-result-list .too-many-result {
+  color: #bb3939;
+  background: #f8f8f8;
+  text-align: center;
+  font-weight: 500;
+}
+
+.modal-page-btn {
+  background: #f3f3f3;
+  border: 1px solid #bcb69e;
+  border-radius: 5px;
+  padding: 2px 13px;
+  font-size: 0.97em;
+  margin: 0 4px;
+  cursor: pointer;
+  color: #222;
+}
+
+.modal-page-btn:hover {
+  background: #e5eefb;
+  color: #123288;
+}
+
+.modal-postcode-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  font-size: 1.5em;
+  color: #b3b3b3;
+  cursor: pointer;
+  margin-left: -40px;
+  margin-right: 6px;
+  user-select: none;
+  transition: color 0.14s;
+  margin-top: -3px;
+}
+
+.modal-postcode-clear-btn:hover {
+  color: #393939;
+}
+
+@media (max-width:540px){
+  .modal-postcode {
+    width:99vw;
+    margin-top:24vw;
+  }
+  .modal-postcode-searchbox {
+    margin:7vw 7vw 0 7vw;
+  }
+  .modal-postcode-tip {
+    margin:0 7vw 10px 7vw;
+  }
+  .modal-postcode-result-list {
+    margin:0 7vw;
+  }
+}
+
+/* -------------------- 날짜 범위 안내 -------------------- */
+.date-range-guide {
+  background: #f8f9fa;
+  border-left: 3px solid #e3f2fd;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 4px;
+  display: none;
+}
+
+.date-range-guide .period-text {
+  color: #1976d2;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.date-range-guide .help-text {
+  color: #666;
+  font-size: 11px;
+  line-height: 1.3;
+}

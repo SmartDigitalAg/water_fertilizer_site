@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  web:
+    build: . 
+    command: gunicorn soil_site_prj.wsgi:application --bind 0.0.0.0:8200
+    volumes:
+      - ./:/usr/src/app/
+    ports:
+      - 80:8200
