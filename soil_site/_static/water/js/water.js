@@ -1,4 +1,4 @@
-// {# 주소검색으로 실제 흙토람이랑 연결 - 디폴트 + 생육단계별 물 필요량 시각화 + 선택 가능 기간 안내 추가#}
+// {# 주소검색으로 실제 흙토람이랑 연결 - 디폴트 + 생육단계별 물 필요량 시각화 + 선택 가능 기간 안내 + 지역별 작물분류 필터링 추가#}
 document.addEventListener('DOMContentLoaded', function() {
     // DOM 요소들 가져오기
     const sidoSelect = document.getElementById('sido');
@@ -37,6 +37,59 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedSidoName = '';
     let selectedSggName = '';
 
+    // ========== 지역별 작물분류 필터링 함수들 추가 ==========
+
+    // 작물분류 데이터 존재 여부 확인 함수
+    async function checkAvailableCropCategories(sidoCode) {
+        const availableCategories = new Set();
+
+        // 모든 작물분류에 대해 데이터 존재 여부 확인
+        const cropCategoryPromises = Object.keys(cropCategories).map(async (categoryCode) => {
+            try {
+                const data = await callWaterAPI('crops', {
+                    sido_code: sidoCode,
+                    crop_gbn: categoryCode
+                });
+
+                if (data.success && data.data && Object.keys(data.data).length > 0) {
+                    availableCategories.add(categoryCode);
+                }
+            } catch (error) {
+                console.log(`작물분류 ${categoryCode} 확인 중 오류:`, error);
+            }
+        });
+
+        await Promise.all(cropCategoryPromises);
+        return availableCategories;
+    }
+
+    // 작물분류 옵션 업데이트 함수
+    function updateCropCategoryOptions(availableCategories) {
+        // 기존 옵션들 모두 제거 (첫 번째 기본 옵션 제외)
+        while (cropGbnSelect.children.length > 1) {
+            cropGbnSelect.removeChild(cropGbnSelect.lastChild);
+        }
+
+        // 사용 가능한 작물분류만 추가 (데이터가 없는 것은 아예 제외)
+        for (const [code, name] of Object.entries(cropCategories)) {
+            if (availableCategories.has(code)) {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = name;
+                cropGbnSelect.appendChild(option);
+            }
+        }
+
+        // 사용 가능한 작물분류가 없는 경우
+        if (availableCategories.size === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '해당 지역에 작물 정보가 없습니다';
+            option.disabled = true;
+            cropGbnSelect.appendChild(option);
+        }
+    }
+
     // ========== 주소에서 지역 정보 추출 및 API 연동 ==========
     function extractRegionFromAddress(address) {
         const parts = address.split(' ').filter(part => part.trim());
@@ -50,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return { sido: null, sgg: null };
     }
 
-    // Promise 기반으로 수정된 getSidoSggCodes 함수
+    // Promise 기반으로 수정된 getSidoSggCodes 함수 (작물분류 필터링 적용)
     function getSidoSggCodes(sidoName, sggName, fullAddress) {
         return new Promise((resolve, reject) => {
             // 시도 코드 매핑
@@ -98,11 +151,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         cropSelect.innerHTML = '<option value="">작물</option>';
                         resetPlantingInfo();
 
-                        // 시도/시군구가 설정되면 작물분류 옵션 활성화
-                        cropGbnSelect.disabled = false;
+                        // 작물분류 로딩 중 비활성화
+                        cropGbnSelect.disabled = true;
 
-                        console.log(`지역 설정 완료: ${sidoName}(${sidoCode}) ${sggName}(${sggCode})`);
-                        resolve({ sidoCode, sggCode, sidoName, sggName });
+                        // 해당 지역의 사용 가능한 작물분류 확인 및 업데이트
+                        checkAvailableCropCategories(sidoCode)
+                        .then(availableCategories => {
+                            updateCropCategoryOptions(availableCategories);
+                            cropGbnSelect.disabled = false; // 로딩 완료 후 활성화
+
+                            console.log(`지역 설정 완료: ${sidoName}(${sidoCode}) ${sggName}(${sggCode})`);
+                            console.log('사용 가능한 작물분류:', Array.from(availableCategories));
+
+                            resolve({ sidoCode, sggCode, sidoName, sggName });
+                        })
+                        .catch(error => {
+                            console.error('작물분류 확인 중 오류:', error);
+                            // 오류 발생 시에도 모든 분류를 표시 (기본 동작)
+                            const allCategories = new Set(Object.keys(cropCategories));
+                            updateCropCategoryOptions(allCategories);
+                            cropGbnSelect.disabled = false;
+                            resolve({ sidoCode, sggCode, sidoName, sggName });
+                        });
                     } else {
                         reject(new Error('해당 시군구를 찾을 수 없습니다: ' + sggName));
                     }
@@ -380,17 +450,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ========== 1. 초기화 ==========
+    // ========== 1. 초기화 (수정됨) ==========
     function initializeSelects() {
-        // 작물분류 옵션 추가
-        if (typeof cropCategories !== 'undefined') {
-            for (const [code, name] of Object.entries(cropCategories)) {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = name;
-                cropGbnSelect.appendChild(option);
-            }
-        }
+        // 작물분류는 지역 선택 후 동적으로 추가됨 (초기에는 기본 옵션만)
 
         // 기본값 설정
         weatherSelect.value = '3';
@@ -1136,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ========== 16. 초기화 버튼 이벤트 ==========
+    // ========== 16. 초기화 버튼 이벤트 (수정됨) ==========
     resetBtn?.addEventListener('click', function() {
         // 주소 관련 초기화
         addressInput.value = '';
@@ -1148,6 +1210,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // 폼 초기화
         cropGbnSelect.value = '';
         cropGbnSelect.disabled = true;
+
+        // 작물분류 옵션들을 모두 제거 (기본 옵션만 남김)
+        while (cropGbnSelect.children.length > 1) {
+            cropGbnSelect.removeChild(cropGbnSelect.lastChild);
+        }
+
         cropSelect.innerHTML = '<option value="">작물</option>';
         examDayInput.value = '';
         weatherSelect.value = '3';
