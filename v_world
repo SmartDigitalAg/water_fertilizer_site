@@ -1,4 +1,4 @@
-#V-World 지도 표시 + 검색 결과 추천 + 마커표시
+#V-World 주소 검색 -> 지번·도로명·위도·경도 표시 + 지도 표시 + 검색 결과 추천 + 마커표시
 import streamlit as st
 import requests
 import folium
