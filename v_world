@@ -1,4 +1,4 @@
-#V-World 1.0으로 지도 표시 + 검색 결과 추천 + 마커표시
+#V-World 지도 표시 + 검색 결과 추천 + 마커표시
 import streamlit as st
 import requests
 import folium
