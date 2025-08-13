@@ -26,13 +26,13 @@
     <div class="form-box">
       <div>
         <label style="font-weight: bold;">· 작물 선택</label>
-        <select id="crop_type" style="width: 150px;">
+        <select id="crop_type">
           <option value="">작물유형 선택</option>
           {% for key, value in crop_categories.items %}
               <option value="{{ key }}">{{ value }}</option>
           {% endfor %}
         </select>
-        <select id="crop_code" style="width: 150px;">
+        <select id="crop_code">
           <option value="">작물 선택</option>
         </select>
       </div>

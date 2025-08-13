@@ -227,19 +227,23 @@ header .logo {
 /* ------------------------- */
 
 @media (max-width: 768px) {
-  header {
-    padding: 16px 24px;
-    flex-direction: column;
-    gap: 12px;
-  }
+  header { padding: 16px 24px; flex-direction: column; gap: 12px; }
+  header .logo { height: 60px; }
+  .main-title { font-size: 2.2em; margin-top: 60px; }
+  .sub-title { font-size: 1.1em; padding: 0 20px; }
+  .card-container { flex-direction: column; align-items: center; gap: 24px; padding: 0 20px 80px; margin-top: 60px; }
+  .card { width: calc(100% - 40px); max-width: 400px; min-width: 280px; }
+}
 
-  .card-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-  }
-
-  header .logo {
-    height: 60px;
-  }
+@media (max-width: 400px) {
+  header { padding: 12px 16px; }
+  header .logo { height: 50px; }
+  .user-actions button { font-size: 0.9em; gap: 4px; }
+  .main-title { font-size: 1.8em; margin-top: 40px; }
+  .sub-title { font-size: 1em; padding: 0 16px; margin-bottom: 40px; }
+  .card-container { padding: 0 16px 60px; margin-top: 40px; gap: 20px; }
+  .card { width: calc(100% - 32px); padding: 20px; height: 280px; }
+  .card h2 { font-size: 1.6em; margin-top: 8px; }
+  .card p { font-size: 1em; line-height: 1.5; }
+  .card .icon-area { height: 80px; margin-bottom: 12px; }
 }
