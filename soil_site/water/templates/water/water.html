@@ -29,7 +29,8 @@
       <div>
         <label style="font-weight: bold;">· 지역</label>
         <div class="address-input-wrapper">
-          <input type="text" id="address-input" placeholder="지번·도로명·건물명 입력" />
+          <input type="text" id="address-input" placeholder="지번·도로명 입력" />
+{#          <input type="text" id="address-input" placeholder="지번·도로명·건물명 입력" />  #}
           <span class="address-clear-btn" title="입력 지우기">&times;</span>
         </div>
         <button type="button" class="button" id="address-search-btn">주소검색</button>
@@ -104,7 +105,8 @@
         <span class="modal-postcode-close" title="닫기">&times;</span>
       </div>
       <div class="modal-postcode-searchbox">
-        <input type="text" id="modal-postcode-input" placeholder="도로명, 건물명, 번지 입력" autocomplete="off" />
+        <input type="text" id="modal-postcode-input" placeholder="지번·도로명 입력" autocomplete="off" />
+{#        <input type="text" id="modal-postcode-input" placeholder="도로명, 건물명, 번지 입력" autocomplete="off" />#}
         <span class="modal-postcode-clear-btn" title="입력 지우기">&times;</span>
         <button type="button" class="modal-postcode-search-btn" title="검색">
           <span class="icon icon1"></span>
@@ -115,7 +117,7 @@
         <ul style="padding-left:14px; margin:0 0 0.5em 0;">
           <li><strong>동/읍/면/리 + 번지</strong> (예: 왕궁면 동용리 444)</li>
           <li><strong>도로명 + 건물번호</strong> (예: 고산로 488)</li>
-          <li><strong>건물명</strong> (예: 국립농업과학원)</li>
+{#          <li><strong>건물명</strong> (예: 국립농업과학원)</li>#}
         </ul>
       </div>
       <ul id="modal-postcode-result-list" class="modal-postcode-result-list"></ul>
