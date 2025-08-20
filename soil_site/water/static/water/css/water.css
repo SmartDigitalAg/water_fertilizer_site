@@ -268,22 +268,6 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
   color: #393939;
 }
 
-@media (max-width:540px){
-  .modal-postcode {
-    width:99vw;
-    margin-top:24vw;
-  }
-  .modal-postcode-searchbox {
-    margin:7vw 7vw 0 7vw;
-  }
-  .modal-postcode-tip {
-    margin:0 7vw 10px 7vw;
-  }
-  .modal-postcode-result-list {
-    margin:0 7vw;
-  }
-}
-
 /* -------------------- 날짜 범위 안내 -------------------- */
 .date-range-guide {
   background: #f8f9fa;
@@ -325,6 +309,10 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  #result h3 { font-size: 1.1em; }
  #result table { font-size: 0.9em; }
  #result th, #result td { padding: 8px 4px; word-break: keep-all; }
+
+ /* 모달 위치 조정 */
+ .modal-postcode-clear-btn { margin-top: -12px; margin-left: -32px; }
+ .modal-postcode-search-btn { transform: translateY(-5px); }
 }
 
 /* 모바일 (400px 이하) */
@@ -348,4 +336,8 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  #result h3 { font-size: 1em; }
  #result table { font-size: 0.8em; }
  #result th, #result td { padding: 6px 3px; font-size: 0.8em; }
+
+ /* 모달 위치 조정 */
+ .modal-postcode-clear-btn { margin-top: -12px; margin-left: -32px; }
+ .modal-postcode-search-btn { transform: translateY(-5px); }
 }
