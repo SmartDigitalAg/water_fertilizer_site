@@ -325,13 +325,14 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  #result div[style*="display: flex"][style*="justify-content: space-between"] {
    display: flex !important;
    flex-direction: column !important;
-   align-items: center !important;
+   align-items: flex-start !important;
    gap: 10px !important;
  }
 
  #result div[style*="display: flex"][style*="justify-content: space-between"] h3 {
    margin: 0 !important;
    font-size: 18px !important;
+   align-self: flex-start !important;
  }
 
  /* CSV 다운로드 버튼 최적화 */
@@ -341,6 +342,7 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
    width: auto !important;
    min-width: 160px !important;
    box-sizing: border-box !important;
+   align-self: center !important;
  }
 
  /* 검색 조건 테이블 최적화 */
@@ -413,12 +415,13 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  /* CSV 다운로드 버튼이 있는 헤더 영역 최적화 */
  #result div[style*="display: flex"][style*="justify-content: space-between"] {
    display: block !important;
-   text-align: center !important;
+   text-align: left !important;
  }
 
  #result div[style*="display: flex"][style*="justify-content: space-between"] h3 {
    margin-bottom: 10px !important;
    font-size: 16px !important;
+   text-align: left !important;
  }
 
  /* CSV 다운로드 버튼 최적화 */
@@ -427,6 +430,7 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
    padding: 6px 10px !important;
    width: 100% !important;
    box-sizing: border-box !important;
+   text-align: center !important;
  }
 
  /* 검색 조건 테이블 최적화 - 새로 추가된 부분 */
@@ -461,4 +465,44 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  #result table th:nth-child(5), #result table td:nth-child(5) { width: 12% !important; } /* 기상정보 */
  #result table th:nth-child(6), #result table td:nth-child(6) { width: 18% !important; } /* 관수방법 */
  #result table th:nth-child(7), #result table td:nth-child(7) { width: 18% !important; } /* 관수면적 */
+
+ /* 메인 제목 "물관리 처방서 결과" 최적화 */
+#result h2 {
+  font-size: 18px !important;
+  margin-bottom: 15px !important;
+  text-align: left !important;
+  word-break: keep-all !important;
+}
+
+/* 주의사항 박스 최적화 */
+#result div[style*="background: #f0f8ff"] {
+  padding: 12px !important;
+  margin-bottom: 15px !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+}
+
+#result div[style*="background: #f0f8ff"] h4 {
+  font-size: 14px !important;
+  margin-bottom: 8px !important;
+  word-break: keep-all !important;
+}
+
+#result div[style*="background: #f0f8ff"] ol {
+  padding-left: 18px !important;
+  margin: 0 !important;
+}
+
+#result div[style*="background: #f0f8ff"] li {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 6px !important;
+  word-break: keep-all !important;
+}
+
+/* 차트 영역 최적화 */
+#waterChart {
+  width: 100% !important;
+  height: 300px !important;
+  margin-bottom: 15px !important;}
 }
