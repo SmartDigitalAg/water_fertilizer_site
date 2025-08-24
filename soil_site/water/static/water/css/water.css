@@ -313,6 +313,68 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  /* 모달 위치 조정 */
  .modal-postcode-clear-btn { margin-top: -12px; margin-left: -32px; }
  .modal-postcode-search-btn { transform: translateY(-5px); }
+
+ /* 결과 영역 지역명 최적화 */
+ #result div[style*="background: #f8f9fa"] {
+   font-size: 14px !important;
+   word-break: keep-all !important;
+   line-height: 1.3 !important;
+ }
+
+ /* CSV 다운로드 버튼이 있는 헤더 영역 최적화 */
+ #result div[style*="display: flex"][style*="justify-content: space-between"] {
+   display: flex !important;
+   flex-direction: column !important;
+   align-items: center !important;
+   gap: 10px !important;
+ }
+
+ #result div[style*="display: flex"][style*="justify-content: space-between"] h3 {
+   margin: 0 !important;
+   font-size: 18px !important;
+ }
+
+ /* CSV 다운로드 버튼 최적화 */
+ #result button[onclick="downloadCSV()"] {
+   font-size: 13px !important;
+   padding: 8px 16px !important;
+   width: auto !important;
+   min-width: 160px !important;
+   box-sizing: border-box !important;
+ }
+
+ /* 검색 조건 테이블 최적화 */
+ #result table {
+   font-size: 13px !important;
+   border-collapse: collapse !important;
+   table-layout: fixed !important;
+ }
+
+ #result table th,
+ #result table td {
+   padding: 8px 4px !important;
+   font-size: 12px !important;
+   word-break: keep-all !important;
+   line-height: 1.3 !important;
+   vertical-align: middle !important;
+   white-space: normal !important;
+   word-wrap: break-word !important;
+ }
+
+ /* 테이블 헤더 최적화 */
+ #result table th {
+   font-size: 11px !important;
+   font-weight: bold !important;
+ }
+
+ /* 각 열의 너비 비율 조정 */
+ #result table th:nth-child(1), #result table td:nth-child(1) { width: 13% !important; } /* 시도 */
+ #result table th:nth-child(2), #result table td:nth-child(2) { width: 13% !important; } /* 시군구 */
+ #result table th:nth-child(3), #result table td:nth-child(3) { width: 12% !important; } /* 작물 */
+ #result table th:nth-child(4), #result table td:nth-child(4) { width: 16% !important; } /* 파종시기 */
+ #result table th:nth-child(5), #result table td:nth-child(5) { width: 13% !important; } /* 기상정보 */
+ #result table th:nth-child(6), #result table td:nth-child(6) { width: 16% !important; } /* 관수방법 */
+ #result table th:nth-child(7), #result table td:nth-child(7) { width: 17% !important; } /* 관수면적 */
 }
 
 /* 모바일 (400px 이하) */
@@ -331,13 +393,72 @@ display: inline-flex; align-items: center; justify-content: center; gap: 5px; ve
  .date-range-guide .period-text { font-size: 12px; }
  .date-range-guide .help-text { font-size: 10px; }
 
- /* 결과 영역 추가 최적화 */
+ /* 모달 위치 조정 */
+ .modal-postcode-clear-btn { margin-top: -12px; margin-left: -32px; }
+ .modal-postcode-search-btn { transform: translateY(-5px); }
+
+  /* 결과 영역 추가 최적화 */
  #result { padding: 12px; }
  #result h3 { font-size: 1em; }
  #result table { font-size: 0.8em; }
  #result th, #result td { padding: 6px 3px; font-size: 0.8em; }
 
- /* 모달 위치 조정 */
- .modal-postcode-clear-btn { margin-top: -12px; margin-left: -32px; }
- .modal-postcode-search-btn { transform: translateY(-5px); }
+ /* 결과 영역 지역명 최적화 */
+ #result div[style*="background: #f8f9fa"] {
+   font-size: 13px !important;
+   word-break: keep-all !important;
+   line-height: 1.3 !important;
+ }
+
+ /* CSV 다운로드 버튼이 있는 헤더 영역 최적화 */
+ #result div[style*="display: flex"][style*="justify-content: space-between"] {
+   display: block !important;
+   text-align: center !important;
+ }
+
+ #result div[style*="display: flex"][style*="justify-content: space-between"] h3 {
+   margin-bottom: 10px !important;
+   font-size: 16px !important;
+ }
+
+ /* CSV 다운로드 버튼 최적화 */
+ #result button[onclick="downloadCSV()"] {
+   font-size: 12px !important;
+   padding: 6px 10px !important;
+   width: 100% !important;
+   box-sizing: border-box !important;
+ }
+
+ /* 검색 조건 테이블 최적화 - 새로 추가된 부분 */
+ #result table {
+   font-size: 11px !important;
+   border-collapse: collapse !important;
+   table-layout: fixed !important;
+ }
+
+ #result table th,
+ #result table td {
+   padding: 6px 2px !important;
+   font-size: 10px !important;
+   word-break: keep-all !important;
+   line-height: 1.2 !important;
+   vertical-align: middle !important;
+   white-space: normal !important;
+   word-wrap: break-word !important;
+ }
+
+ /* 테이블 헤더 최적화 */
+ #result table th {
+   font-size: 9px !important;
+   font-weight: bold !important;
+ }
+
+ /* 각 열의 너비 비율 조정 */
+ #result table th:nth-child(1), #result table td:nth-child(1) { width: 14% !important; } /* 시도 */
+ #result table th:nth-child(2), #result table td:nth-child(2) { width: 12% !important; } /* 시군구 */
+ #result table th:nth-child(3), #result table td:nth-child(3) { width: 10% !important; } /* 작물 */
+ #result table th:nth-child(4), #result table td:nth-child(4) { width: 16% !important; } /* 파종시기 */
+ #result table th:nth-child(5), #result table td:nth-child(5) { width: 12% !important; } /* 기상정보 */
+ #result table th:nth-child(6), #result table td:nth-child(6) { width: 18% !important; } /* 관수방법 */
+ #result table th:nth-child(7), #result table td:nth-child(7) { width: 18% !important; } /* 관수면적 */
 }
