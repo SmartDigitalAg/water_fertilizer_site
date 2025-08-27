@@ -233,6 +233,12 @@ header .logo {
   .sub-title { font-size: 1.1em; padding: 0 20px; }
   .card-container { flex-direction: column; align-items: center; gap: 24px; padding: 0 20px 80px; margin-top: 60px; }
   .card { width: calc(100% - 40px); max-width: 400px; min-width: 280px; }
+
+  .card-hover-menu .hover-menu {
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+    margin: 0;}
 }
 
 @media (max-width: 400px) {
@@ -246,4 +252,17 @@ header .logo {
   .card h2 { font-size: 1.6em; margin-top: 8px; }
   .card p { font-size: 1em; line-height: 1.5; }
   .card .icon-area { height: 80px; margin-bottom: 12px; }
+
+  .card-hover-menu .hover-menu {
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+    margin: 0;
+    top: 110px;
+    padding: 22px 0 20px 0;
+  }
+
+  .card-hover-menu .hover-menu a {
+    font-size: 1.2em;
+  }
 }

@@ -184,9 +184,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         밑거름 비종선택: 
                         <select id="pre_fertilizer_select" onchange="setPreFertilizer()" style="width: 150px; max-width: 300px;">
                             <option value="">선택</option>
-                            ${data.fertilizers.pre.map(f => {
+                            ${data.fertilizers.pre.map((f, index) => {
                                 const fertilizerValue = f.full_info || `${f.npk.replace(/[()]/g, '').split('-').slice(0,3).join('-')}-20`;
-                                return `<option value="${fertilizerValue}" data-npk="${f.npk}">${f.name}</option>`;
+                                return `<option value="${fertilizerValue}" data-npk="${f.npk}">${index + 1}순위: ${f.name}</option>`;
                             }).join('')}
                         </select>
                         <label style="margin-left: 20px;">
@@ -209,9 +209,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         웃거름 비종선택: 
                         <select id="post_fertilizer_select" onchange="setPostFertilizer()" style="width: 150px; max-width: 300px;">
                             <option value="">선택</option>
-                            ${data.fertilizers.post.map(f => {
+                            ${data.fertilizers.post.map((f, index) => {
                                 const fertilizerValue = f.full_info || `${f.npk.replace(/[()]/g, '').split('-').slice(0,3).join('-')}-20`;
-                                return `<option value="${fertilizerValue}" data-npk="${f.npk}">${f.name}</option>`;
+                                return `<option value="${fertilizerValue}" data-npk="${f.npk}">${index + 1}순위: ${f.name}</option>`;
                             }).join('')}
                         </select>
                         <label style="margin-left: 20px;">

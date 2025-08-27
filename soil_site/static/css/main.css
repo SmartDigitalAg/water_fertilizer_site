@@ -254,11 +254,15 @@ header .logo {
   .card .icon-area { height: 80px; margin-bottom: 12px; }
 
   .card-hover-menu .hover-menu {
-    width: calc(100% - 32px);
-    left: 16px;
-    right: 16px;
-    padding: 24px 0 20px 0;}
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+    margin: 0;
+    top: 110px;
+    padding: 22px 0 20px 0;
+  }
 
   .card-hover-menu .hover-menu a {
-    font-size: 1.2em;}
+    font-size: 1.2em;
+  }
 }

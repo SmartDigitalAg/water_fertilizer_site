@@ -2,9 +2,477 @@ import requests
 import json
 import time
 import re
+from bs4 import BeautifulSoup
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
+# 공통 헤더
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Referer': 'https://soil.rda.go.kr/sibi/sibiPrescript.do'
+}
+
+
+def safe_float(value, default=0.0):
+    """안전한 float 변환"""
+    try:
+        return float(value) if value and str(value).strip() else default
+    except (ValueError, AttributeError):
+        return default
+
+
+def api_request(url, params=None, data=None):
+    """흙토람 API 요청 함수"""
+    try:
+        if data:
+            headers = {**HEADERS, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+            response = requests.post(url, data=data, headers=headers, timeout=8)
+        else:
+            response = requests.get(url, params=params, headers=HEADERS, timeout=8)
+        return response.text if response.status_code == 200 else ""
+    except:
+        return ""
+
+
+def parse_options(text):
+    """흙토람 응답 파싱 함수"""
+    result = {}
+    if not text:
+        return result
+
+    parts = text.split('$,$')
+    for part in parts:
+        if '$:$' in part:
+            name, code = part.split('$:$', 1)
+            if name.strip() and code.strip():
+                result[code.strip()] = name.strip()
+    return result
+
+
+def get_region_list(code):
+    """지역 목록 조회"""
+    params = {
+        "mode": "ADDR",
+        "code": code,
+        "full_yn": "Y",
+        "_": int(time.time() * 1000)
+    }
+    text = api_request("https://soil.rda.go.kr/cmm/common/ajaxCall.do", params)
+    return parse_options(text)
+
+
+def get_crop_list(crop_type_code):
+    """작물 목록 조회"""
+    params = {
+        "mode": "NOTCROPNOCODE",
+        "code": crop_type_code,
+        "_": int(time.time() * 1000)
+    }
+    text = api_request("https://soil.rda.go.kr/cmm/common/ajaxCall.do", params)
+    return parse_options(text)
+
+
+def search_crops_by_keyword(keyword):
+    """작물명 키워드 검색 - 작물유형 정보와 함께 반환"""
+    if not keyword or len(keyword.strip()) < 1:
+        return {}
+
+    # 모든 작물 유형에서 검색
+    search_results = {}
+    crop_types = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "14", "12"]
+
+    # 작물 유형 매핑
+    crop_type_names = {
+        "00": "곡류(벼)", "01": "곡류(기타)", "02": "유지류", "03": "서류",
+        "04": "과채류", "05": "근채류", "06": "인경채류", "07": "경엽채류",
+        "08": "산채류", "09": "과수", "10": "약용작물", "11": "화훼류",
+        "14": "사료작물", "12": "기타"
+    }
+
+    for crop_type_code in crop_types:
+        crops = get_crop_list(crop_type_code)
+        for crop_code, crop_name in crops.items():
+            if keyword.lower() in crop_name.lower():
+                # 작물유형 정보와 함께 저장
+                search_results[crop_code] = {
+                    'name': crop_name,
+                    'type_code': crop_type_code,
+                    'type_name': crop_type_names.get(crop_type_code, '기타')
+                }
+
+    # 작물명 가나다순 정렬
+    sorted_crops = dict(sorted(search_results.items(), key=lambda x: x[1]['name']))
+    return sorted_crops
+
+
+def get_jibn_list(sgg_cd, umd_cd):
+    """지번 목록 조회"""
+    params = {
+        "mode": "JIBN",
+        "sgg_cd": sgg_cd,
+        "umd_cd": umd_cd,
+        "exam_type": "",
+        "exam_day_str": "20200101",
+        "exam_day_end": "20250825",
+        "_": int(time.time() * 1000)
+    }
+    html = api_request("https://soil.rda.go.kr/sibi/sibiPrescriptProc.do", params)
+    if not html:
+        return {}
+
+    soup = BeautifulSoup(html, 'html.parser')
+    result = {}
+    for option in soup.find_all('option'):
+        value = option.get('value', '').strip()
+        text = option.get_text(strip=True)
+        if value and text:
+            result[value] = text
+    return result
+
+
+def get_exam_dates(sgg_cd, umd_cd, jibn, exam_type):
+    """검정일자 목록 조회"""
+    params = {
+        "sgg_cd": sgg_cd,
+        "umd_cd": umd_cd,
+        "jibn": jibn,
+        "exam_type": exam_type,
+        "exam_day_str": "20200101",
+        "exam_day_end": "20250825",
+        "flag": "2",
+        "_": int(time.time() * 1000)
+    }
+    html = api_request("https://soil.rda.go.kr/sibi/sibiPrescriptDetail.do", params)
+    if not html:
+        return {}
+
+    soup = BeautifulSoup(html, 'html.parser')
+    select_elem = soup.find('select', {'name': 'exam_day_search'})
+    if not select_elem:
+        return {}
+
+    result = {}
+    for option in select_elem.find_all('option'):
+        value = option.get('value', '').strip()
+        text = option.get_text(strip=True)
+        if value and text:
+            result[value] = text
+    return result
+
+
+def get_fertilizer_prescription_data(exam_data, crop_cd, rice_fert='', organic_at='N'):
+    """비료처방 데이터 조회 - Streamlit과 동일한 방식"""
+    try:
+        params = {
+            'exam_type': exam_data.get('exam_type', ''),
+            'nh_pre_fert_n': '0',
+            'nh_pre_fert_p': '0',
+            'nh_pre_fert_k': '0',
+            'nh_pre_fert_qy': '20',
+            'nh_post_fert_n': '0',
+            'nh_post_fert_p': '0',
+            'nh_post_fert_k': '0',
+            'nh_post_fert_qy': '20',
+            'cow_drop_qy': '25',
+            'pig_drop_qy': '14',
+            'fowl_drop_qy': '26',
+            'sawdust_drop_qy': '21',
+            'checkProgram': 'main',
+            'type': 'S',
+            'flag': 'COMPUTE',
+            'crop_cd': crop_cd,
+            'rice_fert': rice_fert,
+            'param_crop_gbn': crop_cd[:2] if crop_cd else '',
+            'prscrptn_cnd': '2' if organic_at == 'Y' else '1',
+            '_': str(int(time.time() * 1000))
+        }
+
+        # exam_data의 모든 키를 params에 추가
+        for key in ['acid', 'om', 'vldpha', 'posifert_k', 'posifert_ca', 'posifert_mg',
+                    'vldsia', 'selc', 'limeamo', 'cec', 'nit', 'ammo', 'area1', 'area2']:
+            if key in exam_data:
+                params[key] = exam_data[key]
+
+        response = requests.get("https://soil.rda.go.kr/exam/prescript/examPrescriptProc.do",
+                                params=params, headers=HEADERS, timeout=10)
+
+        if response.status_code == 200:
+            return json.loads(response.text)
+        return None
+    except Exception as e:
+        print(f"비료처방 데이터 조회 오류: {str(e)}")
+        return None
+
+
+def get_fertilizer_recommendations(pre_n, pre_p, pre_k, post_n, post_p, post_k, crop_cd, param_crop_gbn):
+    """복합비료 추천 순위 조회 - Streamlit과 동일한 방식"""
+    data = {
+        'type': 'list',
+        'pre_n': pre_n,
+        'pre_p': pre_p,
+        'pre_k': pre_k,
+        'post_n': post_n,
+        'post_p': post_p,
+        'post_k': post_k,
+        'crop_cd': crop_cd,
+        'crop_gbn': param_crop_gbn
+    }
+
+    try:
+        response = requests.post("https://soil.rda.go.kr/sibi/sibiPrescriptDetailNh.do",
+                                 data=data, headers=HEADERS, timeout=10)
+        if response.status_code != 200:
+            return {"pre": [], "post": []}
+    except:
+        return {"pre": [], "post": []}
+
+    fertilizers = {"pre": [], "post": []}
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    for fert_type, input_name, func_prefix, should_disable in [
+        ("pre", "pre_nh", "SetNhPreNPK", sum([safe_float(val) <= 0 for val in [pre_n, pre_p, pre_k]]) > 1),
+        ("post", "post_nh", "SetNhPostNPK", sum([safe_float(val) <= 0 for val in [post_n, post_p, post_k]]) > 1)
+    ]:
+        if should_disable:
+            continue
+
+        for i, input_tag in enumerate(soup.find_all('input', {'name': input_name}), 1):
+            label_tag = soup.find('label', {'for': input_tag.get('id')})
+            if (input_tag.has_attr('disabled') or not label_tag or not input_tag.get('onclick')):
+                continue
+
+            if match := re.search(rf"{func_prefix}\('([^']+)'\)", input_tag.get('onclick')):
+                npk_info = match.group(1).split('-')
+                if len(npk_info) >= 4:
+                    try:
+                        fertilizers[fert_type].append({
+                            "rank": i,
+                            "label_text": label_tag.get_text().strip(),
+                            "npk_key": match.group(1),
+                            "n": safe_float(npk_info[0]),
+                            "p": safe_float(npk_info[1]),
+                            "k": safe_float(npk_info[2]),
+                            "qy": safe_float(npk_info[3], 20.0)
+                        })
+                    except (IndexError, ValueError):
+                        continue
+
+    return fertilizers
+
+
+def get_chemical_data(sido_cd, sgg_cd, umd_cd, ri_cd):
+    """화학성 평균 데이터 조회 - Streamlit과 동일"""
+    html = api_request("https://soil.rda.go.kr/sibi/sibiAvgChemical.do",
+                       data={"sgg_cd": f"{sido_cd}{sgg_cd}", "umd_cd": f"{umd_cd}{ri_cd}", "exam_type": "",
+                             "gubun": "P"})
+    if not html:
+        return None
+
+    soup = BeautifulSoup(html, 'html.parser')
+    table = soup.find('table')
+    if not table:
+        return None
+
+    for row in table.find_all('tr'):
+        cells = row.find_all('td')
+        if len(cells) >= 7:
+            try:
+                data = {k: float(cells[i].get_text().strip()) for i, k in
+                        enumerate(['pH', '유기물', '유효인산', '칼륨', '칼슘', '마그네슘', '전기전도도'])}
+                if len(cells) >= 8:
+                    data['유효규산'] = float(cells[7].get_text().strip())
+                return data
+            except (ValueError, IndexError):
+                continue
+    return None
+
+
+def calculate_api(params):
+    """복합비료 계산 API - Streamlit과 동일"""
+    try:
+        response = requests.get("https://soil.rda.go.kr/exam/prescript/examPrescriptProc.do",
+                               params=params, headers=HEADERS, timeout=10)
+        if response and response.status_code == 200:
+            try:
+                return response.json()
+            except:
+                return {"error": "JSON 파싱 실패"}
+        return {"error": "API 호출 실패"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def prescription(request):
+    """비료사용처방 메인 페이지"""
+    return render(request, 'fertilizer/prescription.html')
+
+
+@csrf_exempt
+def prescription_api(request):
+    """비료사용처방 API 엔드포인트 - 실제 검색 기능 포함"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST 요청만 허용됩니다.'})
+
+    action = request.POST.get('action')
+
+    try:
+        # 1. 지역 정보 조회
+        if action == 'get_region':
+            code = request.POST.get('code', '').strip()
+            if not code:
+                return JsonResponse({'success': False, 'error': '지역 코드가 필요합니다.'})
+
+            result = get_region_list(code)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 2. 작물 목록 조회
+        elif action == 'get_crops':
+            crop_type = request.POST.get('crop_type', '').strip()
+            if not crop_type:
+                return JsonResponse({'success': False, 'error': '작물 유형이 필요합니다.'})
+
+            result = get_crop_list(crop_type)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 3. 작물명 키워드 검색
+        elif action == 'search_crops':
+            keyword = request.POST.get('keyword', '').strip()
+            if not keyword:
+                return JsonResponse({'success': False, 'error': '검색 키워드가 필요합니다.'})
+
+            result = search_crops_by_keyword(keyword)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 4. 지번 목록 조회
+        elif action == 'get_jibn':
+            sgg_cd = request.POST.get('sgg_cd', '').strip()
+            umd_cd = request.POST.get('umd_cd', '').strip()
+            if not sgg_cd or not umd_cd:
+                return JsonResponse({'success': False, 'error': '지역 코드가 필요합니다.'})
+
+            result = get_jibn_list(sgg_cd, umd_cd)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 5. 검정일자 목록 조회
+        elif action == 'get_exam_dates':
+            sgg_cd = request.POST.get('sgg_cd', '').strip()
+            umd_cd = request.POST.get('umd_cd', '').strip()
+            jibn = request.POST.get('jibn', '').strip()
+            exam_type = request.POST.get('exam_type', '').strip()
+
+            if not all([sgg_cd, umd_cd, jibn]):
+                return JsonResponse({'success': False, 'error': '필수 파라미터가 누락되었습니다.'})
+
+            result = get_exam_dates(sgg_cd, umd_cd, jibn, exam_type)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 6. 비료처방 데이터 조회 (실제 검색 기능)
+        elif action == 'get_fertilizer_prescription':
+            exam_data_str = request.POST.get('exam_data', '').strip()
+            crop_code = request.POST.get('crop_code', '').strip()
+            rice_fert = request.POST.get('rice_fert', '').strip()
+            organic_at = request.POST.get('organic_at', 'N').strip()
+
+            if not exam_data_str or not crop_code:
+                return JsonResponse({'success': False, 'error': '필수 파라미터가 누락되었습니다.'})
+
+            try:
+                exam_data = json.loads(exam_data_str)
+                result = get_fertilizer_prescription_data(exam_data, crop_code, rice_fert, organic_at)
+
+                if result:
+                    return JsonResponse({'success': True, 'data': result})
+                else:
+                    return JsonResponse({'success': False, 'error': '비료처방 데이터 조회 실패'})
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': '검정일자 데이터 형식 오류'})
+
+        # 7. 복합비료 추천 순위 조회 (실제 검색 기능)
+        elif action == 'get_fertilizer_recommendations':
+            pre_n = request.POST.get('pre_n', '0').strip()
+            pre_p = request.POST.get('pre_p', '0').strip()
+            pre_k = request.POST.get('pre_k', '0').strip()
+            post_n = request.POST.get('post_n', '0').strip()
+            post_p = request.POST.get('post_p', '0').strip()
+            post_k = request.POST.get('post_k', '0').strip()
+            crop_cd = request.POST.get('crop_code', '').strip()
+            param_crop_gbn = request.POST.get('crop_gbn', '').strip()
+
+            if not crop_cd or not param_crop_gbn:
+                return JsonResponse({'success': False, 'error': '작물 정보가 필요합니다.'})
+
+            result = get_fertilizer_recommendations(pre_n, pre_p, pre_k, post_n, post_p, post_k, crop_cd,
+                                                    param_crop_gbn)
+            return JsonResponse({'success': True, 'data': result})
+
+        # 8. 화학성 평균 조회 (추가 기능)
+        elif action == 'get_chemical_data':
+            sido_cd = request.POST.get('sido_cd', '').strip()
+            sgg_cd = request.POST.get('sgg_cd', '').strip()
+            umd_cd = request.POST.get('umd_cd', '').strip()
+            ri_cd = request.POST.get('ri_cd', '00').strip()
+
+            if not all([sido_cd, sgg_cd, umd_cd]):
+                return JsonResponse({'success': False, 'error': '필수 파라미터가 누락되었습니다.'})
+
+            result = get_chemical_data(sido_cd, sgg_cd, umd_cd, ri_cd)
+            if result:
+                return JsonResponse({'success': True, 'data': result})
+            else:
+                return JsonResponse({'success': False, 'error': '화학성 데이터 조회 실패'})
+
+        # 9. 복합비료 계산 (추가 기능)
+        elif action == 'calculate_fertilizer':
+            # 필요한 모든 파라미터 수집
+            required_params = ['exam_type', 'crop_cd', 'param_crop_gbn']
+            params = {}
+
+            for param in required_params:
+                value = request.POST.get(param, '').strip()
+                if not value:
+                    return JsonResponse({'success': False, 'error': f'{param} 파라미터가 누락되었습니다.'})
+                params[param] = value
+
+            # 추가 파라미터들
+            optional_params = [
+                'nh_pre_fert_n', 'nh_pre_fert_p', 'nh_pre_fert_k', 'nh_pre_fert_qy',
+                'nh_post_fert_n', 'nh_post_fert_p', 'nh_post_fert_k', 'nh_post_fert_qy',
+                'cow_drop_qy', 'pig_drop_qy', 'fowl_drop_qy', 'sawdust_drop_qy',
+                'acid', 'om', 'vldpha', 'posifert_k', 'posifert_ca', 'posifert_mg',
+                'vldsia', 'selc', 'limeamo', 'cec', 'nit', 'ammo', 'area1', 'area2',
+                'rice_fert', 'prscrptn_cnd'
+            ]
+
+            for param in optional_params:
+                params[param] = request.POST.get(param,
+                                                 '0' if 'qy' in param or param in ['prscrptn_cnd'] else '').strip()
+
+            params.update({
+                'checkProgram': 'main',
+                'type': 'S',
+                'flag': 'COMPUTE',
+                '_': str(int(time.time() * 1000))
+            })
+
+            result = calculate_api(params)
+            if 'error' not in result:
+                return JsonResponse({'success': True, 'data': result})
+            else:
+                return JsonResponse({'success': False, 'error': result['error']})
+
+        else:
+            return JsonResponse({'success': False, 'error': f'지원하지 않는 액션: {action}'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'처리 중 오류: {str(e)}'})
+
+
+# 다른 페이지들 (기존 유지)
+def experience(request):
+    """비료사용처방 체험하기 페이지"""
+    return render(request, 'fertilizer/experience.html')
+
 
 # 작물 유형 목록
 CROP_CATEGORIES = {
@@ -60,227 +528,6 @@ CROPS = {
     "04019": "호박(시설재배)"
 }
 
-def get_pnu_list_from_api(address):
-    api_key = "D8A444DC-1488-3E6F-8FBC-BB9F6F4C3ED6"
-    url = (
-        f"https://api.vworld.kr/req/search"
-        f"?service=search&request=search&version=2.0&size=30&page=1"
-        f"&query={address}"
-        f"&type=address&category=PARCEL"
-        f"&format=json&errorformat=json&key={api_key}"
-    )
-    response = requests.get(url)
-    result_list = []
-    if response.status_code == 200:
-        try:
-            result = response.json()
-            items = result.get('response', {}).get('result', {}).get('items', [])
-            for item in items:
-                result_list.append({
-                    'address': get_address_str(item.get('address', '')),  # 문자열로 변환된 주소
-                    'pnu': item.get('id', ''),
-                })
-        except Exception:
-            pass
-    return result_list
-
-
-# address 필드가 dict이든 str이든 안전하게 문자열 반환
-def get_address_str(addr):
-    if isinstance(addr, dict):
-        # 'parcel' 필드(지번 주소) 우선, 없으면 그냥 str(addr)
-        return addr.get('parcel', '') if 'parcel' in addr else str(addr)
-    return addr or ''
-
-
-def patch_pnu_mountain(pnu, mountain_sel):
-    """
-    mountain_sel: "0"=일반 → "1", "1"=산 → "2"
-    기본값은 "0"(일반)로 처리
-    """
-    if not pnu or len(pnu) < 11:
-        return pnu
-    # 정확히 "1"일 때만 산(2), 그 외는 일반(1)
-    mountain = "2" if mountain_sel == "1" else "1"
-    return pnu[:10] + mountain + pnu[11:]
-
-
-def prescription(request):
-    # 1. AJAX: API 검색 버튼 클릭 시 - 인증키, PNU코드, 작물코드, 쌀품질코드 출력
-    if request.method == "POST" and request.POST.get("api_search"):
-        # 주소검색과 동일한 로직 사용
-        sido = request.POST.get('sido', '').strip()
-        sigungu = request.POST.get('sigungu', '').strip()
-        eupmyeon = request.POST.get('eupmyeon', '').strip()
-        ri = request.POST.get('ri', '').strip()
-        bonbun = request.POST.get('bonbun', '').strip()
-        bubun = request.POST.get('bubun', '').strip()
-        mountain_sel = request.POST.get('mountain', '0').strip()
-
-        # 작물 정보 받기
-        crop_name = request.POST.get('crop_name', '').strip()
-        rice_quality = request.POST.get('rice_quality', '').strip()
-
-        # 검증
-        if not all([sido, sigungu, eupmyeon, crop_name]):
-            return JsonResponse({
-                "result": "fail",
-                "message": "지역과 작물을 모두 선택해주세요."
-            })
-
-        # 벼(일반답) 선택 시 품질 선택 필수
-        if crop_name == "벼(일반답)" and not rice_quality:
-            return JsonResponse({
-                "result": "fail",
-                "message": "벼(일반답) 선택 시 품질을 선택해주세요."
-            })
-
-        # 주소검색과 동일한 PNU 조회 로직
-        address = f"{sido} {sigungu} {eupmyeon} {ri}".strip()
-        if bonbun:
-            jibun = bonbun
-            if bubun:
-                jibun += f"-{bubun}"
-            address = f"{address} {jibun}".strip()
-
-        result_pnu_list = get_pnu_list_from_api(address)
-
-        # 지번(본번)이 있으면 address 완전일치 1건만 반환
-        if bonbun:
-            addr_nospace = address.replace(" ", "")
-            result_pnu_list = [
-                                  item for item in result_pnu_list
-                                  if get_address_str(item.get('address')).replace(" ", "") == addr_nospace
-                              ][:1]  # 첫번째 1건만
-
-        # PNU 11번째 자리(필지구분) 치환 (일반이면 1, 산이면 2)
-        for item in result_pnu_list:
-            pnu = item.get('pnu', '')
-            if pnu and len(pnu) >= 19:
-                item['pnu'] = patch_pnu_mountain(pnu, mountain_sel)
-
-        if not result_pnu_list:
-            return JsonResponse({
-                "result": "fail",
-                "message": "PNU 코드를 찾을 수 없습니다."
-            })
-
-        # 작물 코드 매핑
-        crop_code_map = {
-            "벼(일반답)": "00001",
-            "토마토(노지)": "04016",
-            "사과(1-4년생)": "09051",
-            "배(1-4년생)": "09042",
-            "장미": "11005",
-            "국화": "11004",
-        }
-
-        # 쌀품질 코드 매핑
-        rice_quality_map = {
-            "고품질쌀(9kg)": "1",
-            "최고쌀(7kg)": "2",
-            "보통쌀(11kg)": "3"
-        }
-
-        crop_code = crop_code_map.get(crop_name, "00001")
-        rice_qlt_code = rice_quality_map.get(rice_quality, "1") if crop_name == "벼(일반답)" else "1"
-
-        # 인증키
-        service_key = 'fOnrt/nVSCnLI05XSbmySE3F11nxviUIhefxXDnVGGbJusKK04jb0OIAkpbgUuRyca9HwxTfHbi1GiN4UyL/DQ=='
-
-        # 결과 출력
-        result_data = {
-            "result": "success",
-            "service_key": service_key,
-            "pnu_code": result_pnu_list[0]['pnu'],
-            "crop_code": crop_code,
-            "crop_name": crop_name,
-            "address": address,
-            "pnu_address": result_pnu_list[0]['address']
-        }
-
-        # 벼(일반답) 선택 시에만 쌀품질코드 포함
-        if crop_name == "벼(일반답)":
-            result_data["rice_qlt_code"] = rice_qlt_code
-            result_data["rice_quality"] = rice_quality
-
-        return JsonResponse(result_data)
-
-    # 2. AJAX: 비료사용처방 API 결과 요청일 때
-    if request.method == "POST" and request.POST.get("request_prescription"):
-        # 공공데이터포털 인증키 (Encoding)
-        serviceKey = 'fOnrt/nVSCnLI05XSbmySE3F11nxviUIhefxXDnVGGbJusKK04jb0OIAkpbgUuRyca9HwxTfHbi1GiN4UyL/DQ=='
-        url = "http://apis.data.go.kr/1390802/SoilEnviron/FrtlzrUse/getSoilFrtlzrExamRiceInfo"
-        params = {
-            'serviceKey': serviceKey,
-            'PNU_Code': request.POST.get("PNU_Code"),
-            'crop_Code': request.POST.get("crop_Code", "00001"),  # 벼(논) 코드
-            'rice_Qlt_Code': request.POST.get("rice_Qlt_Code", "1"),  # 고품질쌀(9kg)
-            'animix_Ratio_Cattl': '28',
-            'animix_Ratio_Pig': '22',
-            'animix_Ratio_Chick': '19',
-        }
-        try:
-            res = requests.get(url, params=params, timeout=8)
-            if res.status_code == 200:
-                from xml.etree import ElementTree as ET
-                root = ET.fromstring(res.text)
-                item = root.find('.//item')
-                if item is not None:
-                    data = {e.tag: e.text for e in item}
-                    data['result'] = "success"
-                    return JsonResponse(data)
-        except Exception as e:
-            print("비료사용처방 API 오류:", e)
-        return JsonResponse({"result": "fail"})
-
-    # 3. 기본(PNU코드 조회) 로직 (기존 그대로)
-    result_pnu_list = []
-    address = ""
-    bonbun = ""
-    bubun = ""
-    mountain_sel = ""
-    if request.method == "POST":
-        sido = request.POST.get('sido', '').strip()
-        sigungu = request.POST.get('sigungu', '').strip()
-        eupmyeon = request.POST.get('eupmyeon', '').strip()
-        ri = request.POST.get('ri', '').strip()
-        bonbun = request.POST.get('bonbun', '').strip()
-        bubun = request.POST.get('bubun', '').strip()
-        mountain_sel = request.POST.get('mountain', '0').strip()  # 기본은 "0" (일반)
-
-        address = f"{sido} {sigungu} {eupmyeon} {ri}".strip()
-        if bonbun:
-            jibun = bonbun
-            if bubun:
-                jibun += f"-{bubun}"
-            address = f"{address} {jibun}".strip()
-
-        result_pnu_list = get_pnu_list_from_api(address)
-
-        # 지번(본번)이 있으면 address 완전일치 1건만 반환
-        if bonbun:
-            addr_nospace = address.replace(" ", "")
-            result_pnu_list = [
-                                  item for item in result_pnu_list
-                                  if get_address_str(item.get('address')).replace(" ", "") == addr_nospace
-                              ][:1]  # 첫번째 1건만
-
-        # PNU 11번째 자리(필지구분) 치환 (일반이면 1, 산이면 2)
-        for item in result_pnu_list:
-            pnu = item.get('pnu', '')
-            if pnu and len(pnu) >= 19:
-                item['pnu'] = patch_pnu_mountain(pnu, mountain_sel)
-
-    return render(request, 'fertilizer/prescription.html', {
-        'result_pnu_list': result_pnu_list,
-        'input_address': address,
-        'mountain': mountain_sel if request.method == "POST" else "",
-        'bonbun': bonbun if request.method == "POST" else "",
-        'bubun': bubun if request.method == "POST" else "",
-    })
-def experience(request):
-    return render(request, 'fertilizer/experience.html')
 
 def standard(request):
     context = {
@@ -289,7 +536,8 @@ def standard(request):
     }
     return render(request, 'fertilizer/standard.html', context)
 
-@csrf_exempt  # Django에서는 POST 요청시 기본적으로 CSRF 검증을 함. 없으면 403 Forbidden 에러가 발생
+
+@csrf_exempt
 def get_standard_api(request):
     """AJAX로 흙토람 API 호출"""
     if request.method == 'POST':
@@ -297,7 +545,7 @@ def get_standard_api(request):
             crop_code = request.POST.get('crop_code', '')
             area = float(request.POST.get('area', 0))
             area_unit = request.POST.get('area_unit', 'sqm')
-            area_unit_code = "1" if area_unit == "sqm" else "2"    # area_unit 변환 (JavaScript에서 오는 값)
+            area_unit_code = "1" if area_unit == "sqm" else "2"
 
             # 복합비료 계산 관련 파라미터 (선택적)
             prescription_method = request.POST.get('prescription_method', '')
@@ -335,6 +583,7 @@ def get_standard_api(request):
             })
 
     return JsonResponse({'success': False, 'error': 'POST 요청만 허용됩니다.'})
+
 
 def get_standard_data(crop_code, area, area_unit, prescription_method='1',
                      pre_n=0, pre_p=0, pre_k=0, pre_qy=20,
@@ -464,4 +713,3 @@ def standard_result(html_content):
         pass
 
     return fertilizers
-

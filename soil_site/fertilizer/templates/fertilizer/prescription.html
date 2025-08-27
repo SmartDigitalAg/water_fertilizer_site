@@ -5,52 +5,12 @@
   <meta charset="UTF-8" />
   <title>비료사용처방</title>
   <meta name="viewport" content="width=1024,user-scalable=no">
-  <style>
-    /* (기존 스타일 그대로) */
-    body { background:#fcfcfc; font-family:'Noto Sans KR',sans-serif; color:#222; margin:0;}
-    .container { max-width:980px; margin:40px auto 0; padding:1.5em 2em; background:#fff; border:1px solid #e0e0e0;}
-    nav { margin-bottom: 1em; }
-    .nav-link { color: #222; text-decoration: none; padding: 4px 13px; font-size: 1.03em; }
-    .nav-link:hover { background: #f5eee5; color: #222; border-radius: 6px; }
-    .nav-menu { display:inline-block; position:relative; }
-    .dropdown-content { display:none; position:absolute; left:0; min-width:200px; background:#fff; box-shadow:0 6px 18px 0 rgba(120,30,180,0.11); border:1px solid #dedede; border-radius:8px; z-index:100; }
-    .dropdown-link { display:block; padding:12px 18px; color:#222; font-size:1em; text-decoration:none; }
-    .dropdown-link:hover { background:#f5eee5; color:#222; }
-    .nav-menu:hover .dropdown-content { display:block; }
-    .form-box { background:#faf9f7; border:1px solid #e0e0e0; padding:1.2em 1.5em; margin-bottom:1.4em;}
-    .form-row { margin-bottom:1em; display:flex; align-items:center; gap:1em; flex-wrap:wrap;}
-    .form-row label { min-width:90px; font-weight:bold; color:#333; }
-    .form-row select, .form-row input[type="text"] { border:1px solid #bcb69e; background:#fff; height:38px; font-size:1em; padding:0 10px; min-width:110px; }
-    .btn-search, .btn { background:#fff; color:#222; border:2px solid #222; padding:6px 22px; font-size:1em; height:38px; min-width:85px; cursor:pointer; }
-    .btn-search:hover, .btn:hover { background:#f6f1ea; color:#000; }
-    .btn { border:0; background:#6f462a; color:#fff; min-width:90px; }
-    .btn:hover { background:#54341b; }
-    .btn-hidden { display: none; }
-    @media (max-width:720px) {
-      .container { padding:1em 0.3em; }
-      .form-row { flex-direction:column; align-items:flex-start; gap:0.4em; }
-      .form-row label { min-width:0; }
-      .form-row select, .form-row input[type="text"] { width:100%!important; }
-      .btn, .btn-search { width:100%; }
-    }
-    .result-box { margin:26px 0 10px 0; background:#f9f4e8; border-radius:7px; padding:14px 22px; }
-    .result-fail { background:#fde6e6 !important; color:#b64646;}
-    .result-success { background:#e6f7e6 !important; color:#2d5a2d;}
-    .pnu-list { margin:12px 0 0 0; padding-left:18px; }
-    .pnu-list li { margin-bottom:6px; }
-    .pnu-code { color:#8b5b13; font-weight:bold; }
-    .pnu-addr { color:#333; }
-    .presc-table { margin: 24px 0; border-collapse: collapse; width: 100%; }
-    .presc-table th, .presc-table td { border: 1px solid #ddd; padding: 9px 11px; text-align: center; }
-    .presc-table th { background: #eee9db; }
-    .api-result { margin-top: 15px; padding: 15px; background: #f0f8ff; border: 1px solid #b0d4f1; border-radius: 5px; }
-    .api-result h4 { margin: 0 0 10px 0; color: #2563eb; }
-    .api-result p { margin: 5px 0; }
-    .api-result .code { font-family: 'Courier New', monospace; font-weight: bold; color: #dc2626; }
-  </style>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'fertilizer/css/prescription.css' %}">
+  <script src="{% static 'fertilizer/js/prescription.js' %}"></script>
 </head>
 <body>
+  {% csrf_token %}
   <div class="container">
     <nav>
       <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
@@ -64,432 +24,186 @@
         </div>
       </span>
     </nav>
+
     <h1>비료사용처방</h1>
 
+    <div class="notice-text">
+      ※ 해당서비스는 최근 5년 내 토양검정을 받은 필지를 조회하여 비료사용처방서를 확인할 수 있습니다.
+    </div>
+
     <div class="form-box">
-      <!-- CSRF Token hidden input -->
-      <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
-      <div class="form-row">
-        <label>지역</label>
-        <select id="sel_sido"><option value="">광역시/도</option></select>
-        <select id="sel_sgg"><option value="">시/군/구</option></select>
-        <select id="sel_umd"><option value="">읍/면/동</option></select>
-        <select id="sel_ri"><option value="">리</option></select>
-        <button type="button" class="btn-search" id="btn_addr_search">주소검색</button>
-      </div>
-      <div class="form-row">
-        <label>작물</label>
-        <select id="sel_crop_type"><option value="">작물유형 선택</option></select>
-        <select id="sel_crop_name"><option value="">작물 선택</option></select>
-        <select id="sel_quality" style="display:none;"><option value="">품질 선택</option></select>
-        <button type="button" class="btn-search" onclick="alert('작물명검색 더미입니다');">작물명검색</button>
-      </div>
-      <div class="form-row">
-        <label>지번조회</label>
-        <select id="mountain"><option value="0">일반</option><option value="1">산</option></select>
-        <input type="text" id="bonbun" placeholder="본번" maxlength="4" style="width:90px;">
-        <span>-</span>
-        <input type="text" id="bubun" placeholder="부번" maxlength="4" style="width:90px;">
-        <button type="button" class="btn-search" onclick="alert('지번조회 더미입니다');">조회</button>
-      </div>
-      <div class="form-row">
-        <label>지번선택</label>
-        <select id="jibun_sel">
-          <option value="">지번 선택</option>
+      <!-- 지역 선택 -->
+      <div>
+        <label style="font-weight: bold;">· 지역</label>
+        <select id="sido_cd">
+            <option value="">광역시/도</option>
+            <option value="51">강원특별자치도</option>
+            <option value="41">경기도</option>
+            <option value="48">경상남도</option>
+            <option value="47">경상북도</option>
+            <option value="29">광주광역시</option>
+            <option value="27">대구광역시</option>
+            <option value="30">대전광역시</option>
+            <option value="26">부산광역시</option>
+            <option value="11">서울특별시</option>
+            <option value="36">세종특별자치시</option>
+            <option value="31">울산광역시</option>
+            <option value="28">인천광역시</option>
+            <option value="46">전라남도</option>
+            <option value="52">전북특별자치도</option>
+            <option value="50">제주특별자치도</option>
+            <option value="44">충청남도</option>
+            <option value="43">충청북도</option>
+        </select>
+        <select id="sgg_cd">
+          <option value="">시/군/구</option>
+        </select>
+        <select id="umd_cd">
+          <option value="">읍/면/동</option>
+        </select>
+        <select id="ri_cd">
+          <option value="">리</option>
         </select>
       </div>
-      <div class="form-row">
-        <button type="button" class="btn" id="btn_search_pnu_crop">검색</button>
-        <button type="button" class="btn-search btn-hidden" id="btn_show_presc">처방결과 보기</button>
+
+      <!-- 지번/토양검정일자 (초기에는 숨김) -->
+      <div id="address-complete-section" style="display: none;">
+        <div>
+          <label style="font-weight: bold;">· 지번선택</label>
+          <select id="sel_jibn" disabled>
+            <option value="">지번선택</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-weight: bold;">· 토양검정일자</label>
+          <select id="exam_day_search" disabled>
+            <option value="">토양검정일자</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 작물 선택 -->
+      <div>
+        <label style="font-weight: bold;">· 작물</label>
+          <select id="crop_type">
+            <option value="">작물유형 선택</option>
+            <option value="00">곡류(벼)</option>
+            <option value="01">곡류(기타)</option>
+            <option value="02">유지류</option>
+            <option value="03">서류</option>
+            <option value="04">과채류</option>
+            <option value="05">근채류</option>
+            <option value="06">인경채류</option>
+            <option value="07">경엽채류</option>
+            <option value="08">산채류</option>
+            <option value="09">과수</option>
+            <option value="10">약용작물</option>
+            <option value="11">화훼류</option>
+            <option value="14">사료작물</option>
+            <option value="12">기타</option>
+          </select>
+          <select id="crop_code">
+            <option value="">작물 선택</option>
+          </select>
+          <!-- 곡류(벼) 선택시에만 표시되는 품질 선택 -->
+          <select id="rice_fert" class="select-box" style="display: none;">
+            <option value="">- 품질 선택 -</option>
+            <option value="1">고품질쌀(9kg)</option>
+            <option value="2">최고쌀(7kg)</option>
+            <option value="3">보통쌀(11kg)</option>
+          </select>
+          <button type="button" class="btn-crop-search">작물명검색</button>
+      </div>
+
+      <!-- 벼 선택시에만 표시되는 안내문구 -->
+      <div style="display: none; color: red; font-size: 12px; margin-top: 5px; margin-left: 120px;" id="rice-notice">
+        ※ 벼 질소시비량 계산시 유효규산 최대 180mg/kg 적용.
+      </div>
+
+      <!-- 벼 선택시에만 표시되는 유기자재 처방 옵션 -->
+      <div style="display: none;" id="organic-option">
+        <div class="form-row">
+          <label class="form-label"></label>
+          <div class="form-input-group">
+            <input type="radio" id="organicAt1" name="organicAt" value="Y">
+            <label for="organicAt1">유기자재 처방</label>
+            <input type="radio" id="organicAt2" name="organicAt" value="N" checked>
+            <label for="organicAt2">일반 처방</label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button id="search" class="button">
+          <span class="icon"></span>검색
+        </button>
       </div>
     </div>
 
-    {% if result_pnu_list %}
-      <div class="result-box">
-        <b>입력한 주소:</b> {{ input_address }}
-        {% if mountain %}[{% if mountain == "1" %}산{% else %}일반{% endif %}]{% endif %}
-        <br>
-        <b>조회 결과 (최대 30건):</b>
-        <ul class="pnu-list">
-          {% for item in result_pnu_list %}
-            <li>
-              <span class="pnu-addr">{{ item.address }}</span><br>
-              <span class="pnu-code">PNU:</span> {{ item.pnu }}
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% elif input_address %}
-      <div class="result-box result-fail">
-        <b>PNU 정보를 찾을 수 없습니다.</b>
-      </div>
-    {% endif %}
+    <!-- 화학성 평균 결과 출력 영역 (검색 버튼 바로 아래) -->
+    <div id="chemical-average-area"></div>
 
-    <div id="api_result_area"></div>
-    <div id="prescription_result_area"></div>
+    <!-- 결과 출력 영역 -->
+    <div id="result-area"></div>
+
+    <!-- 처방서 보기 및 초기화 버튼 영역 -->
+    <div id="prescription-buttons" style="display: none; margin: 20px 0; text-align: center;">
+      <div class="btn_wrap_b">
+        <button id="prescription-preview" class="button colorOrange" style="margin-right: 10px;">처방서 보기</button>
+        <button id="reset-form" class="button colorWhite">초기화</button>
+      </div>
+    </div>
+
+    <!-- 처방서 모달 -->
+    <div id="prescription-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; overflow-y: auto;">
+      <div style="background: white; max-width: 900px; margin: 20px auto; border-radius: 8px; overflow: hidden;">
+        <div style="padding: 20px; border-bottom: 1px solid #eee; background: #f8f9fa;">
+          <h2 style="margin: 0; font-size: 24px; text-align: center;">📋 비료사용 임시처방서</h2>
+        </div>
+        <div id="prescription-content" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+          <!-- 처방서 내용이 여기에 들어갑니다 -->
+        </div>
+        <div style="padding: 15px 20px; border-top: 1px solid #eee; text-align: center; background: #f8f9fa;">
+          <button id="prescription-close" style="padding: 10px 20px; background: #6D4C41; color: white; border: none; cursor: pointer; border-radius: 4px;">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px;">
+        <div style="text-align: center;">검색 중...</div>
+      </div>
+    </div>
   </div>
 
+  <!-- JavaScript에서 사용할 기본 데이터 -->
   <script>
-    // 전역 변수로 API 검색 결과 저장
-    let apiSearchResult = null;
-
-    $(function(){
-      // 기존 select 초기화 코드 전체 (생략 없이 그대로 유지)
-      const sidoList = [
-        {code: "52", name: "전북특별자치도"}, {code: "41", name: "경기도"},
-        {code: "48", name: "경상남도"}, {code: "50", name: "제주특별자치도"}
-      ];
-      const sggMap = {
-        "52":[{code:"01",name:"완주군"},{code:"02",name:"익산시"},{code:"03",name:"전주시 덕진구"}],
-        "41":[{code:"01",name:"군포시"},{code:"02",name:"김포시"}],
-        "48":[{code:"01",name:"밀양시"},{code:"02",name:"진주시"}],
-        "50":[{code:"01",name:"제주시"},{code:"02",name:"서귀포시"}]
-      };
-      const umdMap = {
-        "52-01":["고산면","비봉면","봉동읍"], "52-02":["금마면","낭산면"], "52-03":["금암동","진북동"],
-        "41-01":["금정동","당동"], "41-02":["마산동","월곶면"],
-        "48-01":["남포동","내일동"], "48-02":["봉곡동","봉래동"],
-        "50-01":["구좌읍","애월읍"], "50-02":["중문동","대정읍"]
-      };
-      const riMap = {
-        "52-01-고산면":["율곡리","화정리"], "52-01-비봉면":["수선리","이전리"], "52-01-봉동읍":["구만리","구미리"],
-        "52-02-금마면":["동고도리","서고도리"], "52-02-낭산면":["용기리","호암리"],
-        "41-02-월곶면":["갈산리","개곡리"],
-        "50-01-구좌읍":["평대리","행원리"], "50-01-애월읍":["상귀리","소길리"],
-        "50-02-대정읍":["보성리","신도리"]
-      };
-      const cropTypeList = [
-        {code:"00",name:"곡류(벼)"},{code:"04",name:"과채류"},{code:"09",name:"과수"},{code:"11",name:"화훼류"}
-      ];
-      const cropMap = {
-        "00":["벼(일반답)"], "04":["토마토(노지)"], "09":["사과(1-4년생)","배(1-4년생)"], "11":["장미","국화"]
-      };
-      const parcelMap = {
-        "52-01-고산면-율곡리": ["[밭] 29", "[밭] 30-1", "[논] 46-1"],
-        "52-01-고산면-화정리": ["[논] 8", "[밭] 50", "[밭] 217"],
-        "52-01-비봉면-수선리": ["[밭] 10", "[밭] 85-1", "[논] 87-1"],
-        "52-01-비봉면-이전리": ["[밭] 5", "[논] 28-1", "[밭] 49"],
-        "52-01-봉동읍-구만리": ["[밭] 28", "[논] 28", "[논] 31-1"],
-        "52-01-봉동읍-구미리": ["[밭] 3-5", "[논] 43", "[밭] 87-1"],
-        "52-02-금마면-동고도리": ["[밭] 3-1", "[밭] 55", "[논] 173"],
-        "52-02-금마면-서고도리": ["[밭] 46-3", "[논] 49", "[밭] 100"],
-        "52-02-낭산면-용기리": ["[밭] 95-13", "[논] 1157-32", "[논] 1663-1"],
-        "52-02-낭산면-호암리": ["[밭] 9", "[논] 178", "[밭] 305-6"],
-      };
-
-      // 품질 데이터 추가
-      const qualityMap = {
-        "벼(일반답)": ["고품질쌀(9kg)", "최고쌀(7kg)", "보통쌀(11kg)"]
-      };
-
-      for(const s of sidoList) $('#sel_sido').append(new Option(s.name, s.code));
-      $('#sel_sido').on('change', function(){
-        let sido = this.value;
-        $('#sel_sgg').empty().append('<option value="">시/군/구</option>');
-        $('#sel_umd').empty().append('<option value="">읍/면/동</option>');
-        $('#sel_ri').empty().append('<option value="">리</option>');
-        $('#jibun_sel').empty().append('<option value="">지번 선택</option>');
-        if(!sido) return;
-        for(const s of (sggMap[sido] || [])) $('#sel_sgg').append(new Option(s.name, s.code));
-      });
-
-      $('#sel_sgg').on('change', function(){
-        let sido = $('#sel_sido').val(), sgg = this.value;
-        $('#sel_umd').empty().append('<option value="">읍/면/동</option>');
-        $('#sel_ri').empty().append('<option value="">리</option>');
-        $('#jibun_sel').empty().append('<option value="">지번 선택</option>');
-        if(!sido || !sgg) return;
-        let list = umdMap[`${sido}-${sgg}`] || [];
-        for(const u of list) $('#sel_umd').append(new Option(u, u));
-      });
-
-      $('#sel_umd').on('change', function(){
-        let sido = $('#sel_sido').val(), sgg = $('#sel_sgg').val(), umd = this.value;
-        $('#sel_ri').empty().append('<option value="">리</option>');
-        $('#jibun_sel').empty().append('<option value="">지번 선택</option>');
-        if(!sido || !sgg || !umd) return;
-        let list = riMap[`${sido}-${sgg}-${umd}`] || [];
-        if(list.length > 0) { for(const r of list) $('#sel_ri').append(new Option(r, r)); }
-      });
-
-      $('#sel_ri').on('change', function(){
-        let sido = $('#sel_sido').val(),
-            sgg  = $('#sel_sgg').val(),
-            umd  = $('#sel_umd').val(),
-            ri   = $('#sel_ri').val();
-        let key = `${sido}-${sgg}-${umd}-${ri}`;
-        $('#jibun_sel').empty().append('<option value="">지번 선택</option>');
-        let jibunArr = parcelMap[key] || [];
-        for(const j of jibunArr) $('#jibun_sel').append(new Option(j, j));
-      });
-
-      // 작물 드롭다운
-      for(const c of cropTypeList) $('#sel_crop_type').append(new Option(c.name, c.code));
-      $('#sel_crop_type').on('change', function(){
-        let list = cropMap[this.value] || [];
-        $('#sel_crop_name').empty().append('<option value="">작물 선택</option>');
-        for(const c of list) $('#sel_crop_name').append(new Option(c, c));
-        $('#sel_quality').hide().empty().append('<option value="">품질 선택</option>');
-      });
-
-      // 작물명 변경 이벤트 추가
-      $('#sel_crop_name').on('change', function(){
-        let cropName = this.value;
-        if(cropName === "벼(일반답)") {
-          $('#sel_quality').empty().append('<option value="">품질 선택</option>');
-          let qualityList = qualityMap[cropName] || [];
-          for(const q of qualityList) {
-            $('#sel_quality').append(new Option(q, q));
-          }
-          $('#sel_quality').show();
-        } else {
-          $('#sel_quality').hide().empty().append('<option value="">품질 선택</option>');
-        }
-      });
-
-      // 주소검색 버튼 클릭 이벤트 (기존 그대로 유지)
-      $('#btn_addr_search').on('click', function(){
-        let sido = $('#sel_sido option:selected').text();
-        let sigungu = $('#sel_sgg option:selected').text();
-        let eupmyeon = $('#sel_umd option:selected').text();
-        let riVal = $('#sel_ri').val();
-        let riText = $('#sel_ri option:selected').text();
-        let ri = (!riVal || riText === "리") ? '' : riText;
-        let jibun = $('#jibun_sel').val();
-
-        // 본번/부번 파싱
-        let bonbun = "", bubun = "";
-        if (jibun) {
-          let match = jibun.match(/(\d+)(?:-(\d+))?/);
-          if (match) {
-            bonbun = match[1];
-            bubun = match[2] || "";
-          }
-        }
-
-        let mountain = $('#mountain').val();
-
-        if (!sido || sido === '광역시/도' || !sigungu || sigungu === '시/군/구' || !eupmyeon || eupmyeon === '읍/면/동') {
-          alert('광역시/도, 시/군/구, 읍/면/동을 모두 선택하세요.');
-          return;
-        }
-
-        // form 전송
-        let form = $('<form>', {method: "post", action: ""})
-        .append('{% csrf_token %}')
-        .append($('<input>', {type:'hidden', name:'sido', value:sido}))
-        .append($('<input>', {type:'hidden', name:'sigungu', value:sigungu}))
-        .append($('<input>', {type:'hidden', name:'eupmyeon', value:eupmyeon}))
-        .append($('<input>', {type:'hidden', name:'ri', value:ri}))
-        .append($('<input>', {type:'hidden', name:'mountain', value:mountain}))
-        .append($('<input>', {type:'hidden', name:'bonbun', value:bonbun}))
-        .append($('<input>', {type:'hidden', name:'bubun', value:bubun}));
-        form.appendTo('body').submit();
-      });
-
-      // API 검색 버튼 클릭 이벤트
-      $('#btn_search_pnu_crop').on('click', function() {
-        let sido = $('#sel_sido option:selected').text();
-        let sigungu = $('#sel_sgg option:selected').text();
-        let eupmyeon = $('#sel_umd option:selected').text();
-        let riVal = $('#sel_ri').val();
-        let riText = $('#sel_ri option:selected').text();
-        let ri = (!riVal || riText === "리") ? '' : riText;
-        let jibun = $('#jibun_sel').val();
-
-        let bonbun = "", bubun = "";
-        if (jibun) {
-          let match = jibun.match(/(\d+)(?:-(\d+))?/);
-          if (match) {
-            bonbun = match[1];
-            bubun = match[2] || "";
-          }
-        }
-
-        let mountain = $('#mountain').val();
-        let cropName = $('#sel_crop_name').val();
-        let riceQuality = $('#sel_quality').val();
-
-        if (!sido || sido === '광역시/도' || !sigungu || sigungu === '시/군/구' || !eupmyeon || eupmyeon === '읍/면/동') {
-          alert('광역시/도, 시/군/구, 읍/면/동을 모두 선택하세요.');
-          return;
-        }
-
-        if (!cropName) {
-          alert('작물을 선택해주세요.');
-          return;
-        }
-
-        if (cropName === "벼(일반답)" && !riceQuality) {
-          alert('벼(일반답) 선택 시 품질을 선택해주세요.');
-          return;
-        }
-
-        $.ajax({
-          type: "POST",
-          url: "",
-          data: {
-            'api_search': 1,
-            'sido': sido,
-            'sigungu': sigungu,
-            'eupmyeon': eupmyeon,
-            'ri': ri,
-            'bonbun': bonbun,
-            'bubun': bubun,
-            'mountain': mountain,
-            'crop_name': cropName,
-            'rice_quality': riceQuality,
-            'csrfmiddlewaretoken': $('#csrf_token').val()
-          },
-          dataType: 'json',
-          success: function(data) {
-            if (data.result === "success") {
-              apiSearchResult = data;
-
-              let html = `
-                <div class="result-box result-success">
-                  <h4>API 검색 결과</h4>
-                  <div class="api-result">
-                    <p><strong>인증키:</strong> <span class="code">${data.service_key}</span></p>
-                    <p><strong>PNU 코드:</strong> <span class="code">${data.pnu_code}</span></p>
-                    <p><strong>작물 코드:</strong> <span class="code">${data.crop_code}</span> (${data.crop_name})</p>
-                    ${data.rice_qlt_code ? `<p><strong>쌀품질 코드:</strong> <span class="code">${data.rice_qlt_code}</span> (${data.rice_quality})</p>` : ''}
-                    <p><strong>입력 주소:</strong> ${data.address}</p>
-                    <p><strong>PNU 주소:</strong> ${data.pnu_address}</p>
-                  </div>
-                </div>
-              `;
-              $("#api_result_area").html(html);
-              $('#btn_show_presc').removeClass('btn-hidden');
-            } else {
-              $("#api_result_area").html(`<div class="result-box result-fail"><b>오류:</b> ${data.message}</div>`);
-              $('#btn_show_presc').addClass('btn-hidden');
-            }
-          },
-          error: function() {
-            $("#api_result_area").html("<div class='result-box result-fail'><b>API 요청에 실패했습니다.</b></div>");
-            $('#btn_show_presc').addClass('btn-hidden');
-          }
-        });
-      });
-
-      // 처방결과 보기 버튼 클릭 이벤트
-      $('#btn_show_presc').on('click', function() {
-        if (!apiSearchResult) {
-          alert('먼저 API 검색을 실행해주세요.');
-          return;
-        }
-
-        let data = apiSearchResult;
-
-        $.ajax({
-          type: "POST",
-          url: "",
-          data: {
-            'request_prescription': 1,
-            'PNU_Code': data.pnu_code,
-            'crop_Code': data.crop_code,
-            'rice_Qlt_Code': data.rice_qlt_code || '1',
-            'csrfmiddlewaretoken': $('#csrf_token').val()
-          },
-          dataType: 'json',
-          success: function(prescData) {
-            if (prescData.result === "success") {
-              let html = `
-                <div class="result-box result-success">
-                  <h3>비료사용 처방결과</h3>
-                  <table class="presc-table">
-                    <tr>
-                      <th>항목</th>
-                      <th>처방량</th>
-                      <th>단위</th>
-                    </tr>
-                    <tr><td>밑거름 질소</td><td>${prescData.pre_Fert_N || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>밑거름 인산</td><td>${prescData.pre_Fert_P || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>밑거름 칼리</td><td>${prescData.pre_Fert_K || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>웃거름 질소</td><td>${prescData.post_Fert_N || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>웃거름 인산</td><td>${prescData.post_Fert_P || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>웃거름 칼리</td><td>${prescData.post_Fert_K || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>우분퇴비</td><td>${prescData.pre_Compost_Cattl || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>돈분퇴비</td><td>${prescData.pre_Compost_Pig || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>계분퇴비</td><td>${prescData.pre_Compost_Chick || '-'}</td><td>kg/10a</td></tr>
-                    <tr><td>혼합퇴비</td><td>${prescData.pre_Compost_Mix || '-'}</td><td>kg/10a</td></tr>
-                  </table>
-                </div>
-              `;
-              $("#prescription_result_area").html(html);
-            } else {
-              $("#prescription_result_area").html(`<div class="result-box result-fail"><b>오류:</b> ${prescData.message || '비료사용처방 API 결과를 불러올 수 없습니다.'}</div>`);
-            }
-          },
-          error: function() {
-            $("#prescription_result_area").html("<div class='result-box result-fail'><b>비료사용처방 API 요청에 실패했습니다.</b></div>");
-          }
-        });
-      });
-    });
-
-    const cropCodeMap = {
-      "벼(일반답)": "00001",
-      "토마토(노지)": "04016",
-      "사과(1-4년생)": "09051",
-      "배(1-4년생)": "09042",
-      "장미": "11005",
-      "국화": "11004",
+    // 작물 타입 매핑
+    const cropTypes = {
+      "00": "곡류(벼)", "01": "곡류(기타)", "02": "유지류", "03": "서류",
+      "04": "과채류", "05": "근채류", "06": "인경채류", "07": "경엽채류",
+      "08": "산채류", "09": "과수", "10": "약용작물", "11": "화훼류",
+      "14": "사료작물", "12": "기타"
     };
 
-    // 기존 처방결과 AJAX 요청 함수 (호환성 유지)
-    function requestPrescription(pnu, cropCode="00001", riceQltCode="1") {
-      let qualitySelected = $('#sel_quality').val();
-      let qualityCode = "1";
+    // 벼 품질 매핑
+    const riceQuality = {
+      "1": "고품질쌀(9kg)",
+      "2": "최고쌀(7kg)",
+      "3": "보통쌀(11kg)"
+    };
 
-      if(qualitySelected === "고품질쌀(9kg)") qualityCode = "1";
-      else if(qualitySelected === "최고쌀(7kg)") qualityCode = "2";
-      else if(qualitySelected === "보통쌀(11kg)") qualityCode = "3";
+    // 지역 매핑
+    const sidoOptions = {
+      "51": "강원특별자치도", "41": "경기도", "48": "경상남도", "47": "경상북도",
+      "29": "광주광역시", "27": "대구광역시", "30": "대전광역시", "26": "부산광역시",
+      "11": "서울특별시", "36": "세종특별자치시", "31": "울산광역시", "28": "인천광역시",
+      "46": "전라남도", "52": "전북특별자치도", "50": "제주특별자치도", "44": "충청남도", "43": "충청북도"
+    };
 
-      $.ajax({
-        type: "POST",
-        url: "",
-        data: {
-          'request_prescription': 1,
-          'PNU_Code': pnu,
-          'crop_Code': cropCode,
-          'rice_Qlt_Code': qualityCode,
-          'csrfmiddlewaretoken': '{{ csrf_token }}'
-        },
-        dataType: 'json',
-        success: function(data){
-          if (data.result === "success") {
-            let html = `
-              <h3>비료사용 처방결과</h3>
-              <table class="presc-table">
-                <tr>
-                  <th>항목</th>
-                  <th>처방량</th>
-                  <th>단위</th>
-                </tr>
-                <tr><td>밑거름 질소</td><td>${data.pre_Fert_N}</td><td>kg/10a</td></tr>
-                <tr><td>밑거름 인산</td><td>${data.pre_Fert_P}</td><td>kg/10a</td></tr>
-                <tr><td>밑거름 칼리</td><td>${data.pre_Fert_K}</td><td>kg/10a</td></tr>
-                <tr><td>웃거름 질소</td><td>${data.post_Fert_N}</td><td>kg/10a</td></tr>
-                <tr><td>웃거름 인산</td><td>${data.post_Fert_P}</td><td>kg/10a</td></tr>
-                <tr><td>웃거름 칼리</td><td>${data.post_Fert_K}</td><td>kg/10a</td></tr>
-                <tr><td>우분퇴비</td><td>${data.pre_Compost_Cattl}</td><td>kg/10a</td></tr>
-                <tr><td>돈분퇴비</td><td>${data.pre_Compost_Pig}</td><td>kg/10a</td></tr>
-                <tr><td>계분퇴비</td><td>${data.pre_Compost_Chick}</td><td>kg/10a</td></tr>
-                <tr><td>혼합퇴비</td><td>${data.pre_Compost_Mix}</td><td>kg/10a</td></tr>
-              </table>
-            `;
-            $("#prescription_result_area").html(html);
-          } else {
-            $("#prescription_result_area").html("<div class='result-box result-fail'><b>API 결과를 불러올 수 없습니다.</b></div>");
-          }
-        },
-        error: function(){
-          $("#prescription_result_area").html("<div class='result-box result-fail'><b>API 요청에 실패했습니다.</b></div>");
-        }
-      });
-    }
+    // 전역 변수 - 처방서에서 사용할 데이터 저장
+    let currentPrescriptionData = null;
   </script>
 </body>
 </html>
