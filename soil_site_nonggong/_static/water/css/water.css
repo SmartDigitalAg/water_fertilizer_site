@@ -1,0 +1,232 @@
+/* ========== 기본 폼 스타일 ========== */
+.form-box {background: #faf9f7; border: 1px solid #e0e0e0; padding: 1.2em 1.5em; margin-bottom: 1.4em; border-radius: 0;}
+.form-box > div {margin: 0.8em 0;}
+.form-box label {width: 120px; display: inline-block; margin-right: 20px;}
+
+select, input[type="date"], input[type="text"] {border:1px solid #bcb69e; background:#fff; height:38px; font-size:1em; padding:0 10px; width: 120px; margin-right:0.5em; box-sizing:border-box;}
+select:focus, input[type="date"]:focus, input[type="text"]:focus {outline:none; border:2px solid #000;}
+.unit {margin-left: -7px;}
+.info {color: #d32f2f; font-size: 0.9em;}
+
+/* ========== 버튼 스타일 ========== */
+.button {height: 38px; padding: 0 15px; font-size: 1em; border: 1px solid transparent; cursor: pointer; margin-right: 0.5em; box-sizing: border-box; background: #6D4C41; color: white; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; vertical-align: top;}
+.button.default {background: #fff; color: #000; border: 1px solid #000;}
+.button-center {text-align: center; margin-top: 1.5em;}
+.button-center .button {border-radius: 3px;}
+.icon {display: inline-block; background-image: url("../images/icon.png"); background-repeat: no-repeat; width: 18px; height: 17px; background-position: 0px 0px;}
+
+/* ========== 주소 입력 ========== */
+.address-input-wrapper {position: relative; display: inline-block; max-width: 400px; width: 100%; vertical-align: middle;}
+.address-input-wrapper input[type="text"] {width: 100%; min-width: 0; height: 38px; font-size: 1em; border: 1px solid #bcb69e; padding: 0 34px 0 10px; box-sizing: border-box;}
+.address-clear-btn {position: absolute; top: 50%; right: 10px; transform: translateY(-50%); width: 22px; height: 22px; font-size: 1.2em; color: #b3b3b3; cursor: pointer; user-select: none; transition: color 0.14s; background: transparent; border: none; padding: 0; display: flex; align-items: center; justify-content: center; z-index: 2;}
+
+/* ========== 주소 검색 모달 ========== */
+.modal-bg {position: fixed; z-index: 5000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(36,36,36,0.22); display:none;}
+.modal-postcode {background: #fff; border-radius: 8px; width: 500px; max-width: 95vw; margin: 90px auto 0 auto; box-shadow: 0 8px 34px 0 rgba(50,50,60,0.18); position: relative; padding-bottom:18px; animation: modal-pop 0.17s; min-height:420px;}
+@keyframes modal-pop {from{opacity:0; transform: translateY(-40px);} to{opacity:1; transform:translateY(0);}}
+.modal-postcode-header {font-size: 1.15em; font-weight: 600; text-align:center; padding: 18px 20px 11px 20px; border-bottom: 1px solid #ececec; position: relative;}
+.modal-postcode-close {position: absolute; right: 19px; top: 16px; font-size: 1.7em; color: #888; cursor: pointer; font-family: Arial, "Noto Sans KR", sans-serif; font-weight: 400;}
+.modal-postcode-close:hover {color: #333;}
+.modal-postcode-searchbox {display: flex; align-items: center; margin: 24px 24px 0 24px; padding: 0; gap: 0;}
+.modal-postcode-searchbox input[type="text"] {flex: 1 1 0; height:44px; border: 2px solid #3683d6; border-radius: 7px; font-size: 1.07em; padding: 0 16px; box-sizing: border-box; outline: none; background: #fff; color: #263a61; font-weight: 500; letter-spacing: -0.01em; transition: border 0.2s; min-width: 0;}
+.modal-postcode-searchbox input[type="text"]:focus {border-color: #2372c7;}
+.modal-postcode-search-btn {width: 44px; height:44px; min-width:44px; border:none; outline:none; padding:0; border-radius: 7px; background: #3683d6; display: flex; align-items: center; justify-content: center; cursor:pointer; box-shadow:0 1px 4px 0 rgba(60,120,200,0.09); transition: background 0.16s; border: 2px solid #3683d6; border-left: none; margin-left: 0;}
+.modal-postcode-search-btn:hover {background: #2462a8;}
+.icon1 {width: 18px; height: 17px; background-position: 0px 0px; filter: invert(1) brightness(9);}
+.modal-postcode-tip {color: #252525; border-radius:7px; padding:13px 15px 11px 14px; font-size:0.98em; margin:0 22px 10px 22px;}
+.modal-postcode-tip strong {color:#3683d6;}
+.modal-postcode-result-list {max-height: 460px; min-height: 460px; overflow-y: auto; margin: 0 24px 0 24px; padding: 0; border-top: 1px solid #efefef; font-size: 1.04em;}
+.modal-postcode-pagination {min-height: 46px; display: flex; align-items: center; justify-content: center;}
+.modal-postcode-result-list li {list-style: none; padding: 11px 8px 10px 8px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.13s; color: #293868;}
+.modal-postcode-result-list li:hover {background: #e7f2fc;}
+.modal-postcode-result-list .no-result, .modal-postcode-result-list .too-many-result {color: #bb3939; text-align: center; background: #f8f8f8; font-weight: 500;}
+.modal-page-btn {background: #f3f3f3; border: 1px solid #bcb69e; border-radius: 5px; padding: 2px 13px; font-size: 0.97em; margin: 0 4px; cursor: pointer; color: #222;}
+.modal-page-btn:hover {background: #e5eefb; color: #123288;}
+.modal-postcode-clear-btn {display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; min-width: 28px; font-size: 1.5em; color: #b3b3b3; cursor: pointer; margin-left: -40px; margin-right: 6px; user-select: none; transition: color 0.14s; margin-top: -3px;}
+.modal-postcode-clear-btn:hover {color: #393939;}
+
+/* ========== 날짜 범위 가이드 ========== */
+.date-range-guide {background: #f8f9fa; border-left: 3px solid #e3f2fd; padding: 10px 12px; margin-top: 8px; border-radius: 4px; display: none;}
+.date-range-guide .period-text {color: #1976d2; font-size: 13px; font-weight: 500; margin-bottom: 3px;}
+.date-range-guide .help-text {color: #666; font-size: 11px; line-height: 1.3;}
+
+/* ========== 요약 바 ========== */
+.summary-bar {background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px 20px; margin: 20px 0; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;}
+.summary-item {text-align: center; padding: 5px 10px;}
+.summary-item .label {font-size: 0.85em; color: #666; margin-bottom: 5px;}
+.summary-item .value {font-size: 1.1em; font-weight: bold; color: #333;}
+
+/* ========== 지표 그리드 ========== */
+.indicator-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
+.indicator-box {background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; min-height: 400px; display: flex; flex-direction: column;}
+.indicator-box h4 {margin: -8px 0 4px 0; font-size: 1.1em; color: #333; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; flex-shrink: 0;}
+.indicator-box .content {flex: 1 1 auto; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; min-height: 0;}
+
+/* ========== 지도 영역 ========== */
+.indicator-map {background: white; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; min-height: 500px; margin-bottom: 20px; position: relative;}
+.indicator-map h4 {margin: -8px 0 15px 0; font-size: 1.1em; color: #333; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+.indicator-map .content {height: calc(100% - 45px); min-height: 440px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.9em; position: relative;}
+
+.map-scale-buttons {display: flex; gap: 8px;}
+.map-scale-btn {background: #fff; border: 1px solid #dee2e6; padding: 6px 14px; border-radius: 4px; font-size: 0.9em; color: #495057; cursor: pointer; transition: all 0.2s;}
+.map-scale-btn:hover {background: #f8f9fa; border-color: #adb5bd;}
+.map-scale-btn.active {background: #6D4C41; color: white; border-color: #6D4C41;}
+
+/* ========== 강수량 달력 ========== */
+.rainfall-calendar-wrapper {width: 100%; height: 100%; display: flex; flex-direction: column;}
+.calendar-header {display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 8px 5px; flex-shrink: 0;}
+.calendar-nav-btn { position: relative; top: 4px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #495057; transition: all 0.2s;}
+.calendar-nav-btn:hover {background: #e9ecef; border-color: #adb5bd;}
+.calendar-month {position: relative; top: 3px;font-size: 1em; font-weight: bold; color: #333;}
+.calendar {width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 12px; background-color: #ffffff; box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.05); flex-shrink: 0;}
+.calendar thead th {background: #f8f9fa; text-align: center; border: 1px solid #c9c9c9; padding: 6px 2px; font-weight: 600; color: #495057; font-size: 11px;}
+.calendar tbody td {text-align: center; height: 30px; border: 1px solid #c9c9c9; position: relative; background: #f8f9fa; vertical-align: middle;}
+.calendar tbody td.current-month {background: #fff;}
+.calendar tbody td.today {background: #fef3c7;}
+.calendar tbody td .date {font-size: 9px; color: #666; position: absolute; top: 2px; left: 3px;}
+.calendar tbody td .rainfall-data {font-size: 10px; color: #0d6efd; font-weight: 600; display: block; margin-top: 10px;}
+.growth-stage-summary {padding: 8px 10px; background: #f8f9fa; border-radius: 4px; border: 1px solid #dee2e6; flex-shrink: 0;}
+.growth-stage-summary h5 {margin: 0 0 6px 0; font-size: 0.9em; color: #495057; font-weight: 600;}
+.stage-item {display: flex; justify-content: space-between; padding: 4px 8px; margin-bottom: 2px; background: white; border-radius: 3px; font-size: 0.8em;}
+.stage-item .stage-name {color: #495057; font-weight: 500;}
+.stage-item .stage-rainfall {color: #0d6efd; font-weight: 600;}
+
+/* ========== 단기 예보 레이아웃 ========== */
+.forecast-wrap {display: flex; flex-direction: column; flex: 1 1 auto; gap: 11px; min-height: 100%;}
+.forecast-title {font-size: 0.85em; font-weight: 600; color: #555; padding: 8px 10px 6px 10px; background: #fafafa; border-bottom: 1px solid #e4e6ea; flex-shrink: 0;}
+
+/* 일별 예보 - 날짜 헤더 높이 조절 (위로만 확장) */
+.daily-forecast {flex: 1 1 auto; border: 1px solid #e4e6ea; border-radius: 8px; background: #fff; overflow: hidden; display: flex; flex-direction: column; position: relative; top: 12px;}
+.daily-forecast table {width: 100%; border-collapse: collapse; table-layout: fixed; height: 100%;}
+.daily-forecast th {background: #fafafa; border-bottom: 1px solid #e4e6ea; padding: 6px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #555;}
+.daily-forecast th.date-header {padding: 7px 4px 5px 4px; line-height: 1.3;}
+.daily-forecast th.date-header.today-date .date-label {color: #0066cc;}
+.daily-forecast th .date-day, .daily-forecast th .date-num, .daily-forecast th .date-label, .daily-forecast th .date-dow {display: block; font-size: 11px; font-weight: 600; color: #333;}
+.daily-forecast th .date-label, .daily-forecast th .date-dow {font-size: 10px; font-weight: 500;}
+.daily-forecast td {border-bottom: 1px solid #f0f0f0; padding: 8px 4px; text-align: center; font-size: 11px; color: #444; vertical-align: middle;}
+.daily-forecast td:first-child {background: #fafafa; font-weight: 600; color: #666; width: 60px;}
+
+/* 시간별 예보 */
+.hourly-forecast {flex: 0 0 auto; margin-top: 8px; border: 1px solid #e4e6ea; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; position: relative; top: 4px;}
+.hf-scroll {overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; flex: 1;}
+.hf-table {width: max(1000px, 100%); border-collapse: collapse; table-layout: fixed; height: 100%;}
+.hf-table th, .hf-table td {border-bottom: 1px solid #f0f0f0; padding: 8px 6px; text-align: center; white-space: nowrap; font-size: 11px;}
+.hf-table th {background: #fafafa; font-weight: 600; color: #555; position: relative;}
+.hf-table th.today-hour {background: #e3f2fd; color: #0066cc;}
+.hf-table td:first-child, .hf-table th:first-child {position: sticky; left: 0; background: #fafafa; z-index: 2; font-weight: 600; color: #666; width: 40px;}
+.hf-scroll::-webkit-scrollbar {height: 8px;}
+.hf-scroll::-webkit-scrollbar-thumb {background: #d1d5db; border-radius: 4px;}
+.hf-scroll::-webkit-scrollbar-track {background: #f3f4f6;}
+
+/* ========== 경사도 지도 (Leaflet) ========== */
+#slope-map {width: 100%; height: 100%; min-height: 440px; background: #ffffff;}
+.leaflet-container {font-family: 'Noto Sans KR', sans-serif;}
+.leaflet-control-attribution {display: none !important;}
+.leaflet-bar {border: 1px solid #dee2e6 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;}
+.leaflet-bar a {color: #495057 !important; border-bottom: 1px solid #dee2e6 !important;}
+.leaflet-bar a:hover {background: #f8f9fa !important;}
+.leaflet-interactive, .leaflet-interactive:focus, path.leaflet-interactive {outline: none !important;}
+.region-tooltip {background: rgba(0, 0, 0, 0.8) !important; border: none !important; border-radius: 4px !important; color: white !important; font-size: 12px !important; padding: 6px 10px !important; box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;}
+
+/* 지도 범례 */
+.map-legend {position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: white; padding: 12px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); z-index: 1000; border: 1px solid #dee2e6;}
+.map-legend h6 {margin: 0 0 10px 0; font-size: 12px; font-weight: 600; text-align: center; color: #333;}
+.legend-content-discrete {display: flex; flex-direction: column; gap: 6px;}
+.legend-item {display: flex; align-items: center; gap: 8px; font-size: 11px; color: #495057;}
+.legend-color {width: 24px; height: 16px; border: 1px solid #ddd; border-radius: 2px;}
+.legend-color-1 {background: #D4E7D7;}
+.legend-color-2 {background: #FFFF00;}
+.legend-color-3 {background: #FCD37F;}
+.legend-color-4 {background: #FFAA00;}
+.legend-color-5 {background: #E60000;}
+.legend-color-6 {background: #730000;}
+
+/* 지도 네비게이션 컨트롤 */
+.map-nav-info {background: #fff; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); font-size: 12px; min-width: 180px; max-width: 280px; margin-top: 0px !important;}
+.map-nav-info .breadcrumb {display: flex; align-items: center; gap: 6px; flex-wrap: wrap;}
+.map-nav-info .crumb {cursor: pointer; color: #333; font-weight: 500; transition: color 0.2s; white-space: nowrap;}
+.map-nav-info .crumb:hover:not(.disabled) {color: #0046FF;}
+.map-nav-info .crumb.disabled {opacity: 0.4; pointer-events: none;}
+.map-nav-info .crumb.active {color: #6D4C41; font-weight: 600;}
+.map-nav-info .sep {opacity: 0.5; color: #666;}
+
+/* ========== 위도/경도 표시 ========== */
+.latlon-inline {display: inline-block;vertical-align: middle;margin-left: 18px;color: #555;font-size: 0.95em;font-weight: 500;}
+.latlon-inline b {color: #333;font-weight: 600;}
+
+/* 이전/다음 달 날짜 스타일 */
+.calendar td.other-month {
+    opacity: 0.9;  /* 연하게 표시 */
+    color: #999;
+}
+.calendar td.other-month .date {color: #bbb;}
+.calendar td.other-month .rainfall-data {color: #bbb;}
+
+/* ========== 반응형 (태블릿) ========== */
+@media (max-width: 720px) {
+    .container {padding: 1em 0.5em;}
+    .form-box {padding: 1em;}
+    .form-box > div {margin: 1em 0;}
+    .form-box label {display: block; margin-bottom: 8px; margin-right: 0; width: auto;}
+    select, input[type="date"], input[type="text"] {width: 100% !important; margin-bottom: 10px; margin-right: 0;}
+    .address-input-wrapper {max-width: 100%;}
+    .unit {margin-left: 5px; display: block; margin-top: -8px;}
+    .button {width: 100%; justify-content: center; margin-bottom: 10px;}
+    .button-center .button {width: 48%; margin: 0 1%;}
+    #recommended {display: block; margin-top: 8px; font-size: 0.9em;}
+    #result {padding: 15px;}
+    #result h3 {font-size: 1.1em;}
+    #result table {font-size: 0.9em;}
+    #result th, #result td {padding: 8px 4px; word-break: keep-all;}
+    .modal-postcode-clear-btn {margin-top: -12px; margin-left: -32px;}
+    .modal-postcode-search-btn {transform: translateY(-5px);}
+    .summary-bar {padding: 10px 15px; font-size: 0.9em;}
+    .indicator-grid {grid-template-columns: 1fr; gap: 15px;}
+    .indicator-box {min-height: 300px; padding: 15px;}
+    .indicator-map {min-height: 350px; padding: 15px;}
+    .indicator-map h4 {flex-direction: column; align-items: flex-start; gap: 10px;}
+    .map-scale-buttons {width: 100%;}
+    .map-scale-btn {flex: 1; padding: 8px 10px; font-size: 0.85em;}
+    .map-legend {right: 5px; padding: 10px;}
+    .map-legend h6 {font-size: 11px;}
+    .legend-item {font-size: 10px;}
+    .legend-color {width: 20px; height: 14px;}
+    .map-nav-info {font-size: 11px; padding: 6px 10px; min-width: 140px; max-width: 220px;}
+    .daily-forecast {height: auto; min-height: 200px;}
+    .hourly-forecast {height: auto; min-height: 180px;}
+    .latlon-inline {display: block;margin-left: 0;margin-top: 10px;font-size: 0.9em;  }
+}
+
+/* ========== 반응형 (모바일) ========== */
+@media (max-width: 400px) {
+    .container {padding: 10px;}
+    h1 {font-size: 1.3em; line-height: 1.4; word-break: keep-all;}
+    .form-box {padding: 0.8em; margin-bottom: 1em;}
+    .form-box > div {margin: 0.8em 0;}
+    select, input[type="date"], input[type="text"] {font-size: 0.9em; height: 36px; padding: 0 8px;}
+    .unit {margin-left: 5px; display: block; margin-top: -8px; font-size: 0.9em;}
+    .button {height: 36px; font-size: 0.9em; padding: 0 12px;}
+    .button-center .button {width: 100%; margin: 5px 0;}
+    #recommended {font-size: 0.8em;}
+    .info {font-size: 0.8em;}
+    .date-range-guide {padding: 8px 10px;}
+    .date-range-guide .period-text {font-size: 12px;}
+    .date-range-guide .help-text {font-size: 10px;}
+    .modal-postcode-clear-btn {margin-top: -12px; margin-left: -32px;}
+    .modal-postcode-search-btn {transform: translateY(-5px);}
+    #result {padding: 12px;}
+    #result h3 {font-size: 1em;}
+    #result table {font-size: 0.8em;}
+    #result th, #result td {padding: 6px 3px; font-size: 0.8em;}
+    .summary-bar {padding: 8px 10px; font-size: 0.8em; flex-direction: column; align-items: flex-start;}
+    .summary-item {width: 100%; text-align: left; padding: 5px 0;}
+    .indicator-box, .indicator-map {min-height: 250px; padding: 12px;}
+    .indicator-box h4, .indicator-map h4 {font-size: 1em;}
+    .map-scale-buttons {flex-direction: column; gap: 5px;}
+    .map-scale-btn {width: 100%; text-align: center;}
+    .map-legend {right: 5px; padding: 8px;}
+    .map-legend h6 {font-size: 10px; margin-bottom: 8px;}
+    .legend-item {font-size: 9px; gap: 6px;}
+    .legend-color {width: 18px; height: 12px;}
+    .map-nav-info {font-size: 10px; padding: 5px 8px; min-width: 120px; max-width: 180px;}
+}

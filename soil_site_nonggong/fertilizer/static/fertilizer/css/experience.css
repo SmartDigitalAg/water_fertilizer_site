@@ -1,0 +1,106 @@
+.form-box {background: #faf9f7; border: 1px solid #e0e0e0; padding: 1.2em 1.5em;
+  margin-bottom: 1.4em; border-radius: 0;}
+.form-box > div {margin: 0.8em 0;}
+.form-box label { min-width: 110px; display: inline-block; margin-right: 10px;}
+
+/* 경지구분 전용 스타일 */
+.field-type-row {display: flex; align-items: center; gap: 15px;}
+.field-type-row > label:first-child {min-width: 110px; margin-right: 10px; flex-shrink: 0;}
+.field-type-group {display: flex; flex-wrap: wrap; gap: 15px; align-items: center;}
+.field-type-group label {min-width: auto; margin-right: 0; display: flex; align-items: center; gap: 5px;}
+.field-type-group input[type="radio"] {width: auto; height: auto; margin: 0;}
+
+/* 기본 입력 요소 스타일 */
+select, input[type="text"] {border: 1px solid #bcb69e; background: #fff; height: 38px; font-size: 1em;
+  padding: 0 10px; width: 120px; margin-right: 0.5em; box-sizing: border-box;}
+#crop_type, #crop_code {width: 150px;}
+select:focus, input[type="text"]:focus {outline: none; border: 2px solid #000;}
+
+/* 작물명검색 버튼 */
+.btn-crop-search {
+  height: 38px; padding: 0 15px; font-size: 1em;
+  border: 1px solid #000; cursor: pointer; margin-left: 0;
+  box-sizing: border-box; background: #fff; color: #333;
+  border-radius: 0; vertical-align: top;}
+
+/* 결과값 버튼 */
+.button {
+  height: 38px; padding: 0 15px; font-size: 1em; border: 1px solid transparent; cursor: pointer;
+  margin-right: 0.5em; box-sizing: border-box; background: #6D4C41; color: white;
+  border-radius: 3px; display: inline-flex; align-items: center; gap: 5px;}
+
+.icon {
+  display: inline-block; background-image: url("../images/icon.png"); background-repeat: no-repeat;
+  width: 18px; height: 17px; background-position: 0px 0px;}
+
+/* 화학성 분석값 섹션 */
+.chemical-section {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  margin: 1.4em 0;
+  border-radius: 0;
+}
+
+.chemical-section h3 {
+  background: #f8f8f8;
+  margin: 0;
+  padding: 12px 15px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.chemical-header {
+  padding: 10px 15px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* 화학성 분석값 테이블 */
+.chem-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.chem-table th {
+  background: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: bold;
+  width: 120px;
+}
+
+.chem-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.chem-table input[type="text"] {
+  width: 80px;
+  height: 32px;
+  border: 1px solid #bcb69e;
+  padding: 0 8px;
+  margin-right: 5px;
+}
+
+.chem-table .unit {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.chem-table th span {
+  color: red;
+  margin-right: 3px;
+}
+
+/* 입력방법 안내 */
+.input-method {
+  padding: 15px;
+  background: #f9f9f9;
+  font-size: 0.9em;
+  color: #666;
+  line-height: 1.4;
+}

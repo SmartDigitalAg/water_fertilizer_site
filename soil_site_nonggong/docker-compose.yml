@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: sh -c "python manage.py collectstatic --noinput && gunicorn soil_site_prj.wsgi:application --bind 0.0.0.0:8200 --workers 2 --timeout 300"
+    volumes:
+      - ./_static:/usr/src/app/_static
+      - ./_media:/usr/src/app/_media
+    ports:
+      - "80:8200"
+    environment:
+      - PYTHONUNBUFFERED=1
+    mem_limit: 800m
+    memswap_limit: 2.5g
+    restart: unless-stopped

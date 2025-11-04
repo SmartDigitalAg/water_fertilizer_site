@@ -1,0 +1,171 @@
+{# 주소검색으로 실제 흙토람이랑 연결 - 파종시기 선택 가능 기간 추가 - 경사도 지도 추가 #}
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>물사용처방</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'water/css/water.css' %}">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    #slope-map {
+      width: 100%;
+      height: 100%;
+      min-height: 440px;
+      background: #ffffff;
+      position: relative;
+    }
+    .leaflet-container {
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">물사용처방</a> |
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'water:water' %}">물사용처방</a>
+          <a class="dropdown-link" href="{% url 'ssp:ssp' %}">미래 기후데이터</a>
+        </div>
+      </span>
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
+    </nav>
+    <h1>노지 밭 물사용 처방</h1>
+    <div class="form-box">
+      <div>
+        <label style="font-weight: bold;">· 지역</label>
+        <div class="address-input-wrapper">
+          <input type="text" id="address-input" placeholder="지번·도로명 입력" />
+          <span class="address-clear-btn" title="입력 지우기">&times;</span>
+        </div>
+        <button type="button" class="button" id="address-search-btn">주소검색</button>
+        <span class="latlon-inline" id="latlon-inline" style="display: none;"></span>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 작물</label>
+        <select id="crop_gbn">
+          <option value="">작물분류</option>
+        </select>
+        <select id="crop">
+          <option value="">작물</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 파종·정식시기</label>
+        <input type="date" id="exam_day" />
+        <span id="recommended">권장 파종·정식시기: ―</span>
+
+        <div id="date-range-info" class="date-range-guide">
+          <div class="period-text">
+            📅 <span id="available-periods"></span>
+          </div>
+          <div class="help-text">
+            각 권장재배시기별로 이전 10일부터 이후 10일까지 선택 가능합니다.
+          </div>
+        </div>
+
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 기상정보</label>
+        <select id="weather">
+          <option value="">평년선택</option>
+          <option value="3" selected>최근3년</option>
+          <option value="10">최근10년</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 관수방법</label>
+        <select id="irrigation">
+          <option value="">관수방법</option>
+          <option value="01">점적관수</option>
+          <option value="02" selected>스프링클러</option>
+          <option value="03">분수호스</option>
+          <option value="04">고랑관수</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 노지밭면적</label>
+        <input type="text" id="area" />
+        <span class="unit">m²</span>
+      </div>
+      <div class="info" style="font-weight: bold;">* 기상정보 데이터 산정에 따라 조회내용표출이 다소 지연될 수 있습니다.</div>
+      <div class="button-center">
+        <button id="search" type="button" class="button">
+            <span class="icon"></span>검색
+        </button>
+        <button id="reset" type="button" class="button default">초기화</button>
+      </div>
+    </div>
+
+    <!-- 결과 표시 영역 -->
+    <div id="result" style="display: none; margin-top: 20px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <!-- 검색 결과가 여기에 표시됩니다 -->
+    </div>
+  </div>
+
+  <!-- 주소 검색 모달창  -->
+  <div class="modal-bg" id="modal-postcode-bg">
+    <div class="modal-postcode">
+      <div class="modal-postcode-header">
+        우편번호 찾기
+        <span class="modal-postcode-close" title="닫기">&times;</span>
+      </div>
+      <div class="modal-postcode-searchbox">
+        <input type="text" id="modal-postcode-input" placeholder="지번·도로명 입력" autocomplete="off" />
+        <span class="modal-postcode-clear-btn" title="입력 지우기">&times;</span>
+        <button type="button" class="modal-postcode-search-btn" title="검색">
+          <span class="icon icon1"></span>
+        </button>
+      </div>
+      <div class="modal-postcode-tip">
+        <div style="font-weight:600; margin-bottom:5px;">우편번호 통합검색 Tip</div>
+        <ul style="padding-left:14px; margin:0 0 0.5em 0;">
+          <li><strong>동/읍/면/리 + 번지</strong> (예: 왕궁면 동용리 444)</li>
+          <li><strong>도로명 + 건물번호</strong> (예: 고산로 488)</li>
+        </ul>
+      </div>
+      <ul id="modal-postcode-result-list" class="modal-postcode-result-list"></ul>
+      <div id="modal-postcode-pagination" class="modal-postcode-pagination"></div>
+    </div>
+  </div>
+
+  <!-- Django에서 전달받은 데이터를 JavaScript 변수로 사용 -->
+  <script>
+    const sidoData = JSON.parse('{{ sido_data|escapejs }}');
+    const cropCategories = JSON.parse('{{ crop_categories|escapejs }}');
+    const sidoNameMapping = JSON.parse('{{ sido_name_mapping|escapejs }}');
+  </script>
+
+  <!-- 달력 데이터 (숨김) -->
+  <script id="calendar-data" type="application/json">
+    {
+      "year": {{ year }},
+      "month": {{ month }},
+      "cal_data": {{ cal_data|safe }}
+    }
+  </script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet Heat Plugin -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <script src="{% static 'water/js/water.js' %}"></script>
+</body>
+</html>

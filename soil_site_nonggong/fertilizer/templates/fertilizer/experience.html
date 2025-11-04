@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>비료사용처방 체험하기</title>
+  <meta name="viewport" content="width=1024,user-scalable=no">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'fertilizer/css/experience.css' %}">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <a class="nav-link" href="{% url 'main-index' %}">홈</a> |
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">물사용처방</a> |
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'water:water' %}">물사용처방</a>
+          <a class="dropdown-link" href="{% url 'ssp:ssp' %}">미래 기후데이터</a>
+        </div>
+      </span>
+      <span class="nav-menu">
+        <a class="nav-link" href="javascript:void(0)">비료사용처방</a>
+        <div class="dropdown-content">
+          <a class="dropdown-link" href="{% url 'fertilizer:prescription' %}">비료사용처방</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:experience' %}">비료사용처방 체험하기</a>
+          <a class="dropdown-link" href="{% url 'fertilizer:standard' %}">비료 표준사용량 처방</a>
+        </div>
+      </span>
+    </nav>
+    <h1>비료사용처방 체험하기</h1>
+
+    <div class="form-box">
+      <div class="field-type-row">
+        <label style="font-weight: bold;">· 경지구분</label>
+        <div class="field-type-group">
+          <label><input type="radio" name="field_type" value="논" checked> 논</label>
+          <label><input type="radio" name="field_type" value="밭"> 밭</label>
+          <label><input type="radio" name="field_type" value="시설"> 시설</label>
+          <label><input type="radio" name="field_type" value="과수"> 과수</label>
+          <label><input type="radio" name="field_type" value="유기농(논)"> 유기농(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(논)"> 간척지(논)</label>
+          <label><input type="radio" name="field_type" value="간척지(밭)"> 간척지(밭)</label>
+          <label><input type="radio" name="field_type" value="임야"> 임야</label>
+          <label><input type="radio" name="field_type" value="기타"> 기타</label>
+        </div>
+      </div>
+      <div>
+        <label style="font-weight: bold;">· 작물</label>
+        <select id="crop_type">
+            <option value="">작물 유형 선택</option>
+            <option value="00">곡류(벼)</option>
+            <option value="01">곡류(기타)</option>
+            <option value="02">유지류</option>
+            <option value="03">서류</option>
+            <option value="04">과채류</option>
+            <option value="05">근채류</option>
+            <option value="06">인경채류</option>
+            <option value="07">경엽채류</option>
+            <option value="08">산채류</option>
+            <option value="09">과수</option>
+            <option value="10">약용작물</option>
+            <option value="11">화훼류</option>
+            <option value="14">사료작물</option>
+            <option value="12">기타</option>
+        </select>
+          <select id="crop_code">
+            <option value="">작물 선택</option>
+          </select>
+          <!-- 곡류(벼) 선택시에만 표시되는 품질 선택 -->
+          <select id="rice_fert" style="display: none;">
+            <option value="">- 품질 선택 -</option>
+            <option value="1">고품질쌀(9kg)</option>
+            <option value="2">최고쌀(7kg)</option>
+            <option value="3">보통쌀(11kg)</option>
+          </select>
+          <button type="button" class="btn-crop-search">작물명검색</button>
+        </div>
+
+        <!-- 벼 선택시에만 표시되는 안내문구 -->
+        <div style="display: none; color: red; font-size: 12px; margin-top: 5px;" id="rice-notice">
+          ※ 벼 질소시비량 계산시 유효규산 최대 180mg/kg 적용.
+        </div>
+
+        <div>
+          <label style="font-weight: bold;">· 대상지면적</label>
+          <input type="text" id="area">
+          <label><input type="radio" name="area_gb" value="㎡" checked> 제곱미터(㎡)</label>
+          <label><input type="radio" name="area_gb" value="평"> 평</label>
+        </div>
+      </div>
+
+      <!-- 화학성 분석값 섹션 -->
+      <div class="chemical-section">
+        <h3>화학성 분석 값</h3>
+        <div class="chemical-header">
+          <span>(*) 필수입력항목</span>
+        </div>
+
+        <table class="chem-table">
+          <tr>
+            <th><span>(*)</span> <label for="ph">pH</label></th>
+            <td><input name="ph" id="ph" type="text"></td>
+            <th><span>(*)</span> <label for="om">유기물</label></th>
+            <td><input name="om" id="om" type="text"> <span class="unit">g/kg</span></td>
+          </tr>
+          <tr>
+            <th><span>(*)</span> <label for="available_p">유효인산</label></th>
+            <td><input name="available_p" id="available_p" type="text"> <span class="unit">mg/kg</span></td>
+            <th><span>(*)</span> <label for="k">칼륨</label></th>
+            <td><input name="k" id="k" type="text"> <span class="unit">cmol+/kg</span></td>
+          </tr>
+          <tr>
+            <th><span>(*)</span> <label for="ca">칼슘</label></th>
+            <td><input name="ca" id="ca" type="text"> <span class="unit">cmol+/kg</span></td>
+            <th><span>(*)</span> <label for="mg">마그네슘</label></th>
+            <td><input name="mg" id="mg" type="text"> <span class="unit">cmol+/kg</span></td>
+          </tr>
+          <tr>
+            <th><span id="span_sio2"></span> <label for="sio2">유효규산</label></th>
+            <td><input name="sio2" id="sio2" type="text"> <span class="unit">mg/kg</span></td>
+            <th><span id="span_ec"></span> <label for="ec">전기전도도</label></th>
+            <td><input name="ec" id="ec" type="text"> <span class="unit">dS/m</span></td>
+          </tr>
+          <tr>
+            <th><label for="lime">석회소요량</label></th>
+            <td><input name="lime" id="lime" type="text"> <span class="unit">kg/10a</span></td>
+            <th><label for="no3_n">질산태질소</label></th>
+            <td><input name="no3_n" id="no3_n" type="text"> <span class="unit">mg/kg</span></td>
+          </tr>
+          <tr>
+            <th><label for="cec">양이온치환용량</label></th>
+            <td><input name="cec" id="cec" type="text"> <span class="unit">cmol+/kg</span></td>
+            <th><label for="nh4_n">암모니아태질소</label></th>
+            <td><input name="nh4_n" id="nh4_n" type="text"> <span class="unit">mg/kg</span></td>
+          </tr>
+        </table>
+
+        <div class="input-method">
+          <strong>입력방법 :</strong> 기본정보와 화학적 분석치는 반드시 입력하여야 합니다. 단, 벼 재배시 유효규산, 벼 이외의 경우는 전기전도도를 반드시 입력하여야 하고, 석회소요량, 양이온치환용량은 미입력시 평균값이 적용됩니다.
+        </div>
+      </div>
+
+      <div>
+        <button id="search" class="button">
+          <span class="icon"></span>결과값
+        </button>
+      </div>
+    </div>
+  <script src="{% static 'fertilizer/js/experience.js' %}"></script>
+</body>
+</html>
