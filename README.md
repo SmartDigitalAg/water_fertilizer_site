@@ -1,6 +1,18 @@
 # 노지 밭작물 비료 사용 및 물 사용 처방 프로그램 고도화
 비료사용처방, 물사용처방을 제공하는 Django 기반 웹 서비스입니다.  
 
+## 패키지 환경 설정
+```
+# 1. 프로젝트 폴더로 이동
+(soil_site) C:\Users\hajon> cd C:\code\soil_site_final
+
+# 2. requirements.txt로 패키지 설치
+(soil_site) C:\code\soil_site_final> pip install -r requirements.txt
+
+# 3. 설치 완료 후 서버 실행
+(soil_site) C:\code\soil_site_final> python manage.py runserver
+```
+
 ## 프로젝트 구조
 
 ```
@@ -10,9 +22,9 @@ soil_site_final/
 │   ├── static/
 │   │   └── fertilizer/
 │   │       ├── css/
-│   │       │   ├── experience.css
-│   │       │   ├── prescription.css
-│   │       │   └── standard.css
+│   │       │   ├── experience.css    #비료사용처방 체험하기
+│   │       │   ├── prescription.css  #비료사용처방
+│   │       │   └── standard.css      #표준 비료사용량 처방
 │   │       ├── data/
 │   │       ├── images/
 │   │       └── js/
