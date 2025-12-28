@@ -110,7 +110,7 @@ soil_site_final/
   - 단기 기상예보 (날씨누리)
   - 경사도 지도(수치표고모델(=DEM) 자료)
 
- - **주요함수**:
+- **주요함수**:
 ```javascript
 // water.js
 handleAddressSearch(addressValue)      // V-World API 주소 검색
@@ -130,13 +130,87 @@ handle_short_forecast_request(request)    # 단기예보 조회
    
 
 ### 2. 미래 기후데이터
+- **URL**: /ssp/
+- **목적**: 기후변화 시나리오(SSP1-2.6, SSP2-4.5, SSP3-7.0, SSP5-8.5) 기반 작물별 물필요량 예측 (2026-2100)
+- **주요기능**: 
+  - 4개 시나리오별 물필요량 지도 시각화
+  - 167개 지점 기후데이터 기반 FAO Penman-Monteith 증발산량 산정
+  - 작물계수 적용한 생육단계별 물필요량 계산
+  - 시나리오별/지역별 변화 추세 및 경향을 동적/정적 지도 및 차트로 표출
+
+- **주요함수**:
+```javascript
+// ssp.js
+loadPrecomputedData(scenario)                                // 사전 계산 데이터 로드
+getWaterRequirementFromPrecomputed(scenario, year, crop)     // 연도별 물필요량 조회
+visualizeDataOnMap(scenario, year, crop)                     // 동적 지도 시각화
+visualizeStaticMaps(crop, period = 'late')                  // 정적 지도 시각화 (전반기/중반기/후반기)
+loadClimateData(scenario, crop, station, stage)             // 기후데이터 로드
+```
+
+- **데이터 구조**: 
+  - 사전 계산 데이터: water_req_{scenario}.csv.gz
+  - 평균 기온 데이터: avg_temp_{scenario}_{stage}_2026_2100.csv
 
 ### 3. 비료사용처방
+- **URL**: /fertilizer/prescription/
+- **목적**: 토양검정 결과 기반 작물별 비료 처방
+- **주요기능**: 
+  - 지역별 토양검정 이력 조회
+  - 화학성 평균 데이터 표시
+  - 비료사용처방 결과 표출
+
+- **주요함수**:
+```javascript
+// prescription.js
+handleAddressComplete()                                                      // 주소 선택 완료 처리
+calculateFertilizer(stage, n, p, k, qy, examData, fertilizerData, cropInfo) // 복합비료 계산
+```
+```python
+# fertilizer/views.py
+get_fertilizer_prescription_data(exam_data, crop_cd, rice_fert='', organic_at='N')                      # 비료처방 데이터 조회
+get_fertilizer_recommendations(pre_n, pre_p, pre_k, post_n, post_p, post_k, crop_cd, param_crop_gbn)    # 복합비료 추천 순위
+get_chemical_data(sido_cd, sgg_cd, umd_cd, ri_cd)                                                       # 화학성 평균 조회
+```
 
 ### 4. 비료사용처방 체험하기
+- **URL**: /fertilizer/experience/
+- **목적**: 토양검정 없이 사용자 입력값으로 비료처방 체험
+- **주요기능**: 
+  - 면적 단위 변환 (㎡ ↔ 평)
+  - 화학성 데이터 직접 입력
+  - 비료사용처방 체험하기 결과 표출
+ 
+- **주요함수**:
+```javascript
+// experience.js
+calculateFertilizer(stage, n, p, k, qy, baseData) // 복합비료 계산
+```
+```python
+# fertilizer/views.py
+calculate_prescription_api(params)      # 비료처방 계산 API
+```
 
 ### 5. 표준 비료사용량 처방
+- **URL**: /fertilizer/standard/
+- **목적**: 작물별 표준 비료사용량 조회 및 처방
+- **주요기능**: 
+  - 면적 단위 변환 (㎡ ↔ 평)
+  - 표준 비료사용량 처방 결과 표출
 
+- **주요함수**:
+- ```javascript
+// standard.js
+window.updateResults = function()                          // 실시간 비료 계산 업데이트
+setPreFertilizer() / setPostFertilizer() // 복합비료 선택
+```
+```python
+# fertilizer/views.py
+get_standard_data(crop_code, area, area_unit, prescription_method='1',
+                      pre_n=0, pre_p=0, pre_k=0, pre_qy=20,
+                      post_n=0, post_p=0, post_k=0, post_qy=20)   // 표준사용량 조회
+standard_result(html_content)                                     // 복합비료 추천
+```
 
 
 
