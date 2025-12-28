@@ -121,7 +121,7 @@ calculateCabbageWaterRequirement()    // 양배추 물필요량 계산
 ]
 ```
 ```python
-python# water/views.py
+# water/views.py
 get_water_api(request)                    # 통합 API 엔드포인트
 handle_slope_request(request)             # 경사도 데이터 조회
 handle_rainfall_all_request(request)      # 전체 강수량 조회
