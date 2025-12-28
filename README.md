@@ -111,17 +111,21 @@ soil_site_final/
   - 경사도 지도(수치표고모델(=DEM) 자료)
 
  - **주요함수**:
-```python
-SPECS = [
-    # ... 기존 설정들 ...
-    {
-        "key": "새로운데이터타입",
-        "path": "/api/새로운경로",
-        "base": ("data폴더명",),
-        "structure": ["파라미터1", "파라미터2", "파라미터3"],
-        "latest_params": ["최신데이터용파라미터"]
-    }
+```javascript
+// water.js
+handleAddressSearch(addressValue)      // V-World API 주소 검색
+fetchSlopeData(lat, lon)              // 경사도 조회
+fetchAllRainfallData(address)         // 강수량 데이터 로드
+fetchAndRenderShortForecast(address)  // 단기예보 조회
+calculateCabbageWaterRequirement()    // 양배추 물필요량 계산
 ]
+```
+```python
+python# water/views.py
+get_water_api(request)                    # 통합 API 엔드포인트
+handle_slope_request(request)             # 경사도 데이터 조회
+handle_rainfall_all_request(request)      # 전체 강수량 조회
+handle_short_forecast_request(request)    # 단기예보 조회
 ```
    
 
