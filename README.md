@@ -199,7 +199,7 @@ calculate_prescription_api(params)      # 비료처방 계산 API
   - 표준 비료사용량 처방 결과 표출
 
 - **주요함수**:
-- ```javascript
+```javascript
 // standard.js
 window.updateResults = function()                          // 실시간 비료 계산 업데이트
 setPreFertilizer() / setPostFertilizer() // 복합비료 선택
