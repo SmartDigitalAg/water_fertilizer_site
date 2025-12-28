@@ -103,11 +103,11 @@ soil_site_final/
 - **URL**: /water/
 - **목적**: 작물별 생육단계에 따른 물필요량 계산 및 관수 의사결정 지원
 - **주요기능**: 
-  - 주소 검색 (V-World API 2.0, 최대 300건 제한)
+  - 주소 검색 (V-World API 2.0, 300건 이상이면 상세 주소 입력하라고 표출)
   - 생육단계별 물필요량 표출 (흙토람 크롤링-기존 18 작물유형)
   - 생육단계별 물필요량 표출 (신규 작물 추가-양배추)
-  - 강수량 데이터 (농업날씨365 215개 지점)
-  - 단기 기상예보 (날씨누리)
+  - 강수량 데이터 (농업날씨365-215개 지점)
+  - 단기 기상예보 (날씨누리-읍면동 기준)
   - 경사도 지도(수치표고모델(=DEM) 자료)
 
 - **주요함수**:
@@ -126,6 +126,7 @@ get_water_api(request)                    # 통합 API 엔드포인트
 handle_slope_request(request)             # 경사도 데이터 조회
 handle_rainfall_all_request(request)      # 전체 강수량 조회
 handle_short_forecast_request(request)    # 단기예보 조회
+get_latlon(request)                       # V-World API 주소 검색 (최대 300건, 위경도 반환)
 ```
    
 
@@ -201,8 +202,8 @@ calculate_prescription_api(params)      # 비료처방 계산 API
 - **주요함수**:
 ```javascript
 // standard.js
-window.updateResults = function()                          // 실시간 비료 계산 업데이트
-setPreFertilizer() / setPostFertilizer() // 복합비료 선택
+window.updateResults = function()             // 실시간 비료 계산 업데이트
+setPreFertilizer() / setPostFertilizer()     // 복합비료 선택
 ```
 ```python
 # fertilizer/views.py
@@ -212,6 +213,11 @@ get_standard_data(crop_code, area, area_unit, prescription_method='1',
 standard_result(html_content)                                     // 복합비료 추천
 ```
 
+## 기술 스택
+### 1. 웹 크롤링
+### 2. 지도 시각화
+### 3. 데이터 처리
+### 4. 주소 검
 
 
 
