@@ -226,12 +226,13 @@ standard_result(html_content)                                     // 복합비�
 - GeoJSON: 행정구역 경계 (CTPRVN, SIG, EMD)
 
 ### 3. 데이터 처리
-- gzip: 압축 파일 읽기
-- CSV 파싱: Python 표준 라이브러리 활용
+- Python csv 모듈: CSV 파싱
+- Python gzip 모듈: 압축 파일 읽기
+- JavaScript Papa Parse: 클라이언트 CSV 파싱 (미래 기후데이터-대용량)
   
 ### 4. 주소 검색
 - V-World 검색 2.0 API
-- 검색 제한: 300건 (초과 시 상세 입력 요청)
+- 검색 제한: 300건 (초과 시 상세 입력 요청하도록 설)
 - 페이지당 최대 1,000개, 최대 10페이지 조회(이론적으로 10000건까지 가능) 
 
 ## 주의사항
