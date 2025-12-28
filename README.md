@@ -218,7 +218,7 @@ standard_result(html_content)                                     // 복합비�
 - 흙토람 (soil.rda.go.kr): 물처방·비료처방 데이터
 - 농업날씨365 (weather.rda.go.kr): 215개 지점 강수량
 - 날씨누리 (weather.go.kr): 단기 기상예보
-- requests, BeautifulSoup 활용
+- requests, BeautifulSoup4 활용
   
 ### 2. 지도 시각화
 - Leaflet: 동적 지도 표출 (물처방)
