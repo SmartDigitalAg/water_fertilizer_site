@@ -223,7 +223,7 @@ standard_result(html_content)                                     // 복합비�
 ### 2. 지도 시각화
 - Leaflet: 동적 지도 표출 (물처방)
 - OpenLayers: 정적/동적 지도 표출 (미래 기후데이터)
-- GeoJSON: 행정구역 경계 (CTPRVN, SIG, EMD)
+- JSON: 행정구역 경계 (CTPRVN, SIG, EMD)
 
 ### 3. 데이터 처리
 - Python csv 모듈: CSV 파싱
